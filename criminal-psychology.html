@@ -1,0 +1,503 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hồ Sơ Tâm Lý Tội Phạm - Chuyên Sâu</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Roboto+Slab:wght@300;400;700&family=Playfair+Display:wght@700;900&family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
+
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #020617; /* Slate 950 */
+            color: #E2E8F0;
+            line-height: 1.8;
+        }
+        h1, h2, h3, .serif-font {
+            font-family: 'Playfair Display', serif;
+        }
+        .slab-font {
+            font-family: 'Roboto Slab', serif;
+        }
+        .chart-container {
+            position: relative;
+            width: 100%;
+            max-width: 100%;
+            height: 400px;
+            max-height: 450px;
+        }
+        .gradient-text {
+            background: linear-gradient(to right, #38BDF8, #F472B6);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        .glass-panel {
+            background: rgba(30, 41, 59, 0.7);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(148, 163, 184, 0.1);
+        }
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar {
+            width: 10px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #020617; 
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #334155; 
+            border-radius: 5px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #475569; 
+        }
+    </style>
+</head>
+<body class="antialiased selection:bg-pink-900 selection:text-pink-50">
+
+    <!-- Hero Section -->
+    <header class="relative w-full min-h-[60vh] flex items-center justify-center overflow-hidden border-b border-slate-800">
+        <!-- Abstract Background Elements -->
+        <div class="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/black-felt.png')] opacity-50 z-0"></div>
+        <div class="absolute top-0 left-0 w-full h-full bg-gradient-to-b from-transparent via-[#020617]/80 to-[#020617] z-10"></div>
+        <div class="absolute -top-20 -left-20 w-96 h-96 bg-blue-900/20 rounded-full blur-3xl animate-pulse"></div>
+        <div class="absolute bottom-20 right-20 w-80 h-80 bg-pink-900/20 rounded-full blur-3xl animate-pulse delay-1000"></div>
+
+        <div class="relative z-20 text-center px-4 max-w-4xl mx-auto">
+            <div class="inline-block px-3 py-1 mb-6 border border-sky-500/30 rounded-full bg-sky-900/10 backdrop-blur-sm">
+                <span class="text-sky-400 text-xs tracking-[0.2em] uppercase font-bold">Deep Dive Analysis</span>
+            </div>
+            <h1 class="text-5xl md:text-7xl font-black mb-6 leading-tight">
+                <span class="block text-slate-100">Giải Mã</span>
+                <span class="gradient-text">Tâm Lý Tội Phạm</span>
+            </h1>
+            <p class="text-xl md:text-2xl text-slate-400 font-light max-w-2xl mx-auto mb-8 serif-font italic">
+                "Khi bạn nhìn sâu vào vực thẳm, vực thẳm cũng nhìn lại bạn." — Friedrich Nietzsche
+            </p>
+            <p class="text-slate-400 text-base max-w-2xl mx-auto leading-relaxed">
+                Một bản phân tích chuyên sâu dựa trên các nghiên cứu điển hình từ loạt sách "Phác Họa Chân Dung Kẻ Phạm Tội". Khám phá quy trình hình thành nhân cách lệch lạc, phân biệt giữa thủ đoạn và chữ ký, cùng nghệ thuật phát hiện sự dối trá.
+            </p>
+        </div>
+    </header>
+
+    <main class="max-w-5xl mx-auto px-6 py-20 space-y-32">
+
+        <!-- PART 1: GENESIS -->
+        <article class="grid grid-cols-1 lg:grid-cols-12 gap-12 items-start">
+            <div class="lg:col-span-5 sticky top-24">
+                <h2 class="text-4xl font-bold text-slate-100 mb-6 flex items-center gap-4">
+                    <span class="text-5xl text-sky-500 opacity-50">01.</span>
+                    Nguồn Gốc Của <br/>"Quái Vật"
+                </h2>
+                <div class="prose prose-invert prose-lg text-slate-400">
+                    <p>
+                        Các nhà tâm lý học tội phạm đồng thuận rằng không ai sinh ra đã là sát nhân. Đó là một quá trình "lên men" của những bi kịch.
+                    </p>
+                    <p>
+                        Lý thuyết phổ biến chỉ ra sự kết hợp tử thần giữa <strong>yếu tố sinh học</strong> (tổn thương não bộ, gen) và <strong>môi trường sống</strong> (bạo hành, bỏ bê).
+                    </p>
+                    <blockquote class="border-l-4 border-pink-500 pl-4 italic text-slate-300 my-6 bg-slate-900/50 p-4 rounded-r-lg">
+                        "Đứa trẻ không được làng ấp ôm sẽ đốt cháy ngôi làng để cảm nhận hơi ấm."
+                    </blockquote>
+                    <p>
+                        Biểu đồ bên cạnh phân tích tỷ trọng các yếu tố ảnh hưởng chính dựa trên dữ liệu tổng hợp từ các hồ sơ vụ án nổi tiếng.
+                    </p>
+                </div>
+            </div>
+            
+            <div class="lg:col-span-7 space-y-8">
+                <div class="glass-panel p-8 rounded-2xl shadow-2xl border-t border-sky-500/20">
+                    <h3 class="text-center text-xl font-bold text-slate-200 mb-2 uppercase tracking-widest">Ma Trận Hình Thành Nhân Cách</h3>
+                    <div class="chart-container">
+                        <canvas id="formationChart"></canvas>
+                    </div>
+                </div>
+
+                <!-- Case Study Box -->
+                <div class="bg-slate-900 border border-slate-700 p-6 rounded-xl">
+                    <h4 class="text-pink-400 font-bold uppercase text-sm mb-3 flex items-center">
+                        <span class="w-2 h-2 bg-pink-500 rounded-full mr-2"></span>
+                        Hồ Sơ Điển Hình: Tam Giác Macdonald
+                    </h4>
+                    <p class="text-sm text-slate-400 mb-4">
+                        Nhiều kẻ sát nhân hàng loạt biểu hiện 3 dấu hiệu này (Tam giác Macdonald) khi còn nhỏ, báo hiệu sự phát triển nhân cách lệch lạc:
+                    </p>
+                    <div class="grid grid-cols-3 gap-4 text-center">
+                        <div class="bg-slate-950 p-3 rounded border border-slate-800">
+                            <div class="text-2xl mb-1">🔥</div>
+                            <div class="text-xs font-bold text-slate-300">Thích Đốt Lửa</div>
+                        </div>
+                        <div class="bg-slate-950 p-3 rounded border border-slate-800">
+                            <div class="text-2xl mb-1">🐈</div>
+                            <div class="text-xs font-bold text-slate-300">Tàn Nhẫn Với Động Vật</div>
+                        </div>
+                        <div class="bg-slate-950 p-3 rounded border border-slate-800">
+                            <div class="text-2xl mb-1">🛏️</div>
+                            <div class="text-xs font-bold text-slate-300">Đái Dầm Quá Tuổi</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </article>
+
+        <!-- PART 2: THE PROCESS (New Visual Section) -->
+        <article class="relative">
+            <div class="absolute left-1/2 -translate-x-1/2 w-px h-full bg-gradient-to-b from-transparent via-slate-700 to-transparent hidden md:block"></div>
+            
+            <div class="text-center mb-16 relative z-10">
+                <span class="text-sky-400 font-bold tracking-widest text-sm uppercase">Phương Pháp Luận</span>
+                <h2 class="text-4xl font-bold text-white mt-2">Quy Trình Phác Họa Chân Dung</h2>
+            </div>
+
+            <div class="space-y-12 relative z-10">
+                <!-- Step 1 -->
+                <div class="flex flex-col md:flex-row items-center justify-center gap-8 group">
+                    <div class="w-full md:w-5/12 text-right space-y-2">
+                        <h3 class="text-2xl font-bold text-slate-200 group-hover:text-sky-400 transition-colors">Thu Thập Dữ Liệu</h3>
+                        <p class="text-slate-400 text-sm">Hình ảnh hiện trường, báo cáo pháp y, lời khai nhân chứng và hồ sơ nạn nhân.</p>
+                    </div>
+                    <div class="w-12 h-12 bg-slate-800 rounded-full border-4 border-slate-900 flex items-center justify-center shadow-[0_0_20px_rgba(56,189,248,0.3)] z-20 shrink-0">
+                        <span class="text-sky-400 font-bold">1</span>
+                    </div>
+                    <div class="w-full md:w-5/12 text-left bg-slate-900/50 p-4 rounded border border-slate-800">
+                        <span class="text-xs text-slate-500 uppercase font-bold">Câu hỏi chính</span>
+                        <p class="text-slate-300 italic">"Chuyện gì đã xảy ra và xảy ra như thế nào?"</p>
+                    </div>
+                </div>
+
+                <!-- Step 2 -->
+                <div class="flex flex-col md:flex-row items-center justify-center gap-8 group">
+                    <div class="w-full md:w-5/12 text-right bg-slate-900/50 p-4 rounded border border-slate-800">
+                        <span class="text-xs text-slate-500 uppercase font-bold">Câu hỏi chính</span>
+                        <p class="text-slate-300 italic">"Tại sao lại chọn nạn nhân này?"</p>
+                    </div>
+                    <div class="w-12 h-12 bg-slate-800 rounded-full border-4 border-slate-900 flex items-center justify-center shadow-[0_0_20px_rgba(244,114,182,0.3)] z-20 shrink-0">
+                        <span class="text-pink-400 font-bold">2</span>
+                    </div>
+                    <div class="w-full md:w-5/12 text-left space-y-2">
+                        <h3 class="text-2xl font-bold text-slate-200 group-hover:text-pink-400 transition-colors">Phân Loại Tội Phạm</h3>
+                        <p class="text-slate-400 text-sm">Xác định loại hình: Có tổ chức (thông minh, lên kế hoạch) hay Vô tổ chức (bốc đồng, hỗn loạn).</p>
+                    </div>
+                </div>
+
+                <!-- Step 3 -->
+                <div class="flex flex-col md:flex-row items-center justify-center gap-8 group">
+                    <div class="w-full md:w-5/12 text-right space-y-2">
+                        <h3 class="text-2xl font-bold text-slate-200 group-hover:text-yellow-400 transition-colors">Tái Dựng Hồ Sơ</h3>
+                        <p class="text-slate-400 text-sm">Dự đoán đặc điểm nhân khẩu học, thói quen, nghề nghiệp và tâm lý của kẻ thủ ác.</p>
+                    </div>
+                    <div class="w-12 h-12 bg-slate-800 rounded-full border-4 border-slate-900 flex items-center justify-center shadow-[0_0_20px_rgba(250,204,21,0.3)] z-20 shrink-0">
+                        <span class="text-yellow-400 font-bold">3</span>
+                    </div>
+                    <div class="w-full md:w-5/12 text-left bg-slate-900/50 p-4 rounded border border-slate-800">
+                        <span class="text-xs text-slate-500 uppercase font-bold">Kết quả</span>
+                        <p class="text-slate-300 italic">Bản phác họa chân dung dùng để thu hẹp danh sách nghi phạm.</p>
+                    </div>
+                </div>
+            </div>
+        </article>
+
+        <!-- PART 3: MO VS SIGNATURE (Comparison Section) -->
+        <article class="bg-slate-900/30 rounded-3xl p-8 border border-slate-800">
+            <div class="text-center mb-10">
+                <h2 class="text-3xl font-bold text-slate-100">Thủ Đoạn (MO) vs. Chữ Ký (Signature)</h2>
+                <p class="text-slate-400 mt-2 max-w-2xl mx-auto">
+                    Hai khái niệm dễ nhầm lẫn nhưng mang ý nghĩa hoàn toàn khác biệt trong phân tích hành vi.
+                </p>
+            </div>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                <!-- MO Card -->
+                <div class="bg-slate-800 p-8 rounded-2xl border-t-4 border-sky-500 shadow-lg hover:-translate-y-1 transition-transform">
+                    <div class="flex justify-between items-center mb-4">
+                        <h3 class="text-2xl font-bold text-white">Modus Operandi</h3>
+                        <span class="text-xs font-bold bg-sky-900 text-sky-300 px-2 py-1 rounded">Hành vi chức năng</span>
+                    </div>
+                    <p class="text-slate-300 mb-6 min-h-[80px]">
+                        Là những hành động <strong>cần thiết</strong> để thực hiện tội ác, trốn thoát và xóa dấu vết. MO có thể thay đổi và hoàn thiện theo thời gian khi tội phạm có kinh nghiệm.
+                    </p>
+                    <ul class="space-y-3 text-sm text-slate-400">
+                        <li class="flex items-center"><span class="text-sky-500 mr-2">✓</span> Đeo găng tay để tránh vân tay</li>
+                        <li class="flex items-center"><span class="text-sky-500 mr-2">✓</span> Cắt dây điện thoại/internet</li>
+                        <li class="flex items-center"><span class="text-sky-500 mr-2">✓</span> Chọn địa điểm vắng vẻ</li>
+                    </ul>
+                </div>
+
+                <!-- Signature Card -->
+                <div class="bg-slate-800 p-8 rounded-2xl border-t-4 border-pink-500 shadow-lg hover:-translate-y-1 transition-transform">
+                    <div class="flex justify-between items-center mb-4">
+                        <h3 class="text-2xl font-bold text-white">Chữ Ký (Signature)</h3>
+                        <span class="text-xs font-bold bg-pink-900 text-pink-300 px-2 py-1 rounded">Nhu cầu tâm lý</span>
+                    </div>
+                    <p class="text-slate-300 mb-6 min-h-[80px]">
+                        Là những hành động <strong>không cần thiết</strong> để gây án, nhưng thỏa mãn nhu cầu tâm lý lệch lạc của hung thủ. Đây là yếu tố <strong>bất biến</strong>, phản ánh bản chất của hắn.
+                    </p>
+                    <ul class="space-y-3 text-sm text-slate-400">
+                        <li class="flex items-center"><span class="text-pink-500 mr-2">✓</span> Sắp xếp tử thi theo tư thế lạ</li>
+                        <li class="flex items-center"><span class="text-pink-500 mr-2">✓</span> Để lại vật kỷ niệm hoặc lấy đi đồ vật</li>
+                        <li class="flex items-center"><span class="text-pink-500 mr-2">✓</span> Tra tấn vượt mức cần thiết</li>
+                    </ul>
+                </div>
+            </div>
+        </article>
+
+        <!-- PART 4: THE LIE (Radar Chart) -->
+        <article class="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
+            <div class="lg:col-span-7 order-2 lg:order-1">
+                <div class="glass-panel p-6 rounded-2xl shadow-2xl border border-slate-700">
+                    <h3 class="text-center text-lg font-bold text-slate-300 mb-6">Biểu Đồ Radar: Dấu Hiệu Sinh Lý Khi Nói Dối</h3>
+                    <div class="chart-container">
+                        <canvas id="lieDetectorChart"></canvas>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="lg:col-span-5 order-1 lg:order-2 space-y-6">
+                <h2 class="text-4xl font-bold text-slate-100 flex items-center gap-4">
+                    <span class="text-5xl text-pink-500 opacity-50">02.</span>
+                    Giải Mã Sự Dối Trá
+                </h2>
+                <div class="prose prose-invert text-slate-400">
+                    <p>
+                        "Cơ thể không biết nói dối." Khi não bộ phải xử lý mâu thuẫn giữa thực tế và lời bịa đặt (gánh nặng nhận thức), nó sẽ "rò rỉ" năng lượng qua các vi biểu cảm và cử chỉ.
+                    </p>
+                    <h4 class="text-white font-bold mt-4">Các điểm rò rỉ chính:</h4>
+                    <ul class="list-none space-y-4 mt-2">
+                        <li class="flex gap-4">
+                            <span class="text-2xl">👀</span>
+                            <div>
+                                <strong class="text-sky-300">Đôi mắt:</strong> Đồng tử giãn nở khi căng thẳng. Chớp mắt liên tục hoặc nhìn chằm chằm bất thường để kiểm soát đối phương.
+                            </div>
+                        </li>
+                        <li class="flex gap-4">
+                            <span class="text-2xl">🦶</span>
+                            <div>
+                                <strong class="text-sky-300">Đôi chân:</strong> Phần cơ thể ít được kiểm soát nhất. Mũi chân hướng ra cửa thể hiện mong muốn trốn thoát tiềm thức.
+                            </div>
+                        </li>
+                        <li class="flex gap-4">
+                            <span class="text-2xl">👄</span>
+                            <div>
+                                <strong class="text-sky-300">Giọng nói:</strong> Cổ họng khô do adrenaline làm thay đổi cao độ giọng nói hoặc gây ra các tật nói lắp tạm thời.
+                            </div>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </article>
+
+        <!-- PART 5: WARNING SIGNS (Bar Chart) -->
+        <article class="space-y-8">
+            <div class="text-center max-w-3xl mx-auto">
+                <h2 class="text-4xl font-bold text-slate-100 mb-4">Thang Đo Nguy Hiểm</h2>
+                <p class="text-slate-400">
+                    Những dấu hiệu hành vi cảnh báo một cá nhân đang trượt dài vào bóng tối. Mức độ nghiêm trọng tăng dần từ sự cô lập xã hội đến bạo lực thực thể.
+                </p>
+            </div>
+
+            <div class="glass-panel p-8 rounded-2xl shadow-2xl border-t-4 border-yellow-500">
+                <div class="chart-container" style="height: 400px;">
+                    <canvas id="warningSignsChart"></canvas>
+                </div>
+            </div>
+            
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 text-sm text-slate-500 text-center">
+                <div class="p-4 bg-slate-900 rounded">
+                    <strong class="block text-slate-300 mb-1">Cấp độ 1: Ẩn Mình</strong>
+                    Cô lập, trầm cảm, thu mình khỏi các mối quan hệ xã hội thông thường.
+                </div>
+                <div class="p-4 bg-slate-900 rounded">
+                    <strong class="block text-slate-300 mb-1">Cấp độ 2: Phản Kháng</strong>
+                    Chống đối xã hội, phá hoại tài sản, không tuân thủ quy tắc.
+                </div>
+                <div class="p-4 bg-slate-900 rounded border border-red-900/30">
+                    <strong class="block text-red-400 mb-1">Cấp độ 3: Bạo Lực</strong>
+                    Hành hạ động vật, bạo lực thể xác, mất khả năng cảm thông (Psychopathy).
+                </div>
+            </div>
+        </article>
+
+    </main>
+
+    <!-- Footer -->
+    <footer class="border-t border-slate-800 bg-slate-950 py-16">
+        <div class="max-w-4xl mx-auto px-6 text-center">
+            <h3 class="text-2xl serif-font text-slate-200 mb-6">"Quái vật không ngủ dưới gầm giường.<br>Chúng ngủ trong đầu chúng ta."</h3>
+            <p class="text-slate-500 text-sm mb-8">
+                Infographic được tổng hợp từ dữ liệu của FBI, sách "Mindhunter" và series "Phác Họa Chân Dung Kẻ Phạm Tội".<br>
+                Mục đích: Giáo dục và nâng cao nhận thức về sức khỏe tâm thần và an toàn xã hội.
+            </p>
+            <div class="flex justify-center gap-4">
+                <span class="w-2 h-2 rounded-full bg-slate-700"></span>
+                <span class="w-2 h-2 rounded-full bg-slate-700"></span>
+                <span class="w-2 h-2 rounded-full bg-slate-700"></span>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        // --- CONFIGURATION & DATA ---
+        Chart.defaults.font.family = "'Inter', sans-serif";
+        Chart.defaults.color = '#94A3B8';
+        
+        // Helper: Wrap long labels
+        function wrapLabels(labels, maxLength = 20) {
+            return labels.map(label => {
+                if (label.length <= maxLength) return label;
+                const words = label.split(' ');
+                const lines = [];
+                let currentLine = words[0];
+                for (let i = 1; i < words.length; i++) {
+                    if ((currentLine + " " + words[i]).length <= maxLength) {
+                        currentLine += " " + words[i];
+                    } else {
+                        lines.push(currentLine);
+                        currentLine = words[i];
+                    }
+                }
+                lines.push(currentLine);
+                return lines;
+            });
+        }
+
+        const commonTooltip = {
+            backgroundColor: 'rgba(15, 23, 42, 0.95)',
+            titleColor: '#F8FAFC',
+            bodyColor: '#CBD5E1',
+            borderColor: '#38BDF8',
+            borderWidth: 1,
+            padding: 12,
+            boxPadding: 6,
+            callbacks: {
+                title: function(tooltipItems) {
+                    const item = tooltipItems[0];
+                    let label = item.chart.data.labels[item.dataIndex];
+                    return Array.isArray(label) ? label.join(' ') : label;
+                }
+            }
+        };
+
+        // --- CHART 1: FORMATION ---
+        new Chart(document.getElementById('formationChart'), {
+            type: 'doughnut',
+            data: {
+                labels: wrapLabels(["Tổn Thương Thời Thơ Ấu (Bạo hành/Lạm dụng)", "Môi Trường Giáo Dục & Gia Đình", "Cú Sốc Tâm Lý / Stress", "Rối Loạn Thần Kinh / Sinh Học"]),
+                datasets: [{
+                    data: [45, 25, 20, 10],
+                    backgroundColor: ['#F472B6', '#38BDF8', '#FACC15', '#475569'],
+                    borderColor: '#1E293B',
+                    borderWidth: 0,
+                    hoverOffset: 20
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                cutout: '65%',
+                plugins: {
+                    legend: { position: 'right', labels: { padding: 20, usePointStyle: true } },
+                    tooltip: {
+                        ...commonTooltip,
+                        callbacks: {
+                            ...commonTooltip.callbacks,
+                            label: (ctx) => ` ${ctx.raw}%: ${ctx.chart.data.labels[ctx.dataIndex]}`
+                        }
+                    }
+                }
+            }
+        });
+
+        // --- CHART 2: LIE DETECTOR ---
+        new Chart(document.getElementById('lieDetectorChart'), {
+            type: 'radar',
+            data: {
+                labels: wrapLabels(["Tránh Giao Tiếp Mắt", "Cử Chỉ Thừa (Gãi/Chạm)", "Mâu Thuẫn Lời Nói", "Vi Biểu Cảm Lo Âu", "Thay Đổi Giọng Nói", "Phản Ứng Phòng Thủ"]),
+                datasets: [
+                    {
+                        label: 'Hành Vi Bình Thường (Baseline)',
+                        data: [2, 3, 1, 2, 2, 2],
+                        backgroundColor: 'rgba(56, 189, 248, 0.1)',
+                        borderColor: '#38BDF8',
+                        pointRadius: 3
+                    },
+                    {
+                        label: 'Hành Vi Khi Nói Dối (Deception)',
+                        data: [8, 9, 7, 9, 8, 8],
+                        backgroundColor: 'rgba(244, 114, 182, 0.2)',
+                        borderColor: '#F472B6',
+                        pointBackgroundColor: '#F472B6',
+                        pointRadius: 4
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    r: {
+                        angleLines: { color: '#334155' },
+                        grid: { color: '#334155' },
+                        pointLabels: { color: '#E2E8F0', font: { size: 11 } },
+                        ticks: { display: false, backdropColor: 'transparent' }
+                    }
+                },
+                plugins: {
+                    legend: { position: 'top' },
+                    tooltip: commonTooltip
+                }
+            }
+        });
+
+        // --- CHART 3: WARNING SIGNS ---
+        new Chart(document.getElementById('warningSignsChart'), {
+            type: 'bar',
+            data: {
+                labels: wrapLabels(["Tàn Nhẫn Với Động Vật", "Vô Cảm / Lạnh Lùng (Psychopathy)", "Ám Ảnh Cưỡng Chế / Sưu Tầm", "Chống Đối Xã Hội / Phá Hoại", "Cô Lập Bản Thân"]),
+                datasets: [{
+                    label: 'Chỉ Số Nguy Hiểm (Thang 100)',
+                    data: [95, 88, 75, 70, 60],
+                    backgroundColor: (ctx) => {
+                        const val = ctx.raw;
+                        if (val > 90) return '#EF4444'; // Red
+                        if (val > 70) return '#F97316'; // Orange
+                        return '#FACC15'; // Yellow
+                    },
+                    borderRadius: 6,
+                    barPercentage: 0.6
+                }]
+            },
+            options: {
+                indexAxis: 'y',
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    x: {
+                        grid: { color: '#334155' },
+                        ticks: { color: '#94A3B8' },
+                        max: 100
+                    },
+                    y: {
+                        grid: { display: false },
+                        ticks: { color: '#E2E8F0', font: { size: 13, weight: 'bold' } }
+                    }
+                },
+                plugins: {
+                    legend: { display: false },
+                    tooltip: {
+                        ...commonTooltip,
+                        callbacks: {
+                            ...commonTooltip.callbacks,
+                            label: (ctx) => ` Mức độ nguy hiểm: ${ctx.raw}/100`
+                        }
+                    }
+                }
+            }
+        });
+    </script>
+</body>
+</html>
