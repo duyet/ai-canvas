@@ -1,0 +1,662 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>P-Value Explorer: Hiểu đúng về Trị số P</title>
+    
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Icons (Phosphor Icons) -->
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                        mono: ['JetBrains Mono', 'monospace'],
+                    },
+                    colors: {
+                        brand: {
+                            50: '#f0fdf4',
+                            100: '#dcfce7',
+                            500: '#22c55e', 
+                            600: '#16a34a',
+                            700: '#15803d',
+                            900: '#14532d',
+                        },
+                        danger: {
+                            500: '#ef4444',
+                            600: '#dc2626',
+                        }
+                    },
+                    animation: {
+                        'fade-in': 'fadeIn 0.5s ease-out',
+                        'slide-up': 'slideUp 0.5s ease-out',
+                    },
+                    keyframes: {
+                        fadeIn: {
+                            '0%': { opacity: '0' },
+                            '100%': { opacity: '1' },
+                        },
+                        slideUp: {
+                            '0%': { transform: 'translateY(20px)', opacity: '0' },
+                            '100%': { transform: 'translateY(0)', opacity: '1' },
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: #f1f5f9; }
+        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+
+        input[type=range] { -webkit-appearance: none; background: transparent; }
+        input[type=range]::-webkit-slider-thumb {
+            -webkit-appearance: none; height: 20px; width: 20px; border-radius: 50%;
+            background: #ffffff; border: 2px solid #16a34a; cursor: pointer;
+            margin-top: -8px; box-shadow: 0 2px 6px rgba(0,0,0,0.1); transition: transform 0.1s;
+        }
+        input[type=range]::-webkit-slider-thumb:hover { transform: scale(1.1); }
+        input[type=range]::-webkit-slider-runnable-track {
+            width: 100%; height: 6px; cursor: pointer; background: #e2e8f0; border-radius: 4px;
+        }
+        
+        .glass-panel {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.5);
+            box-shadow: 0 10px 30px -5px rgba(0, 0, 0, 0.05);
+        }
+        .canvas-container { position: relative; width: 100%; height: 350px; }
+    </style>
+</head>
+<body class="bg-slate-50 text-slate-800 antialiased min-h-screen flex flex-col">
+
+    <!-- Header -->
+    <header class="sticky top-0 z-50 bg-white/80 backdrop-blur-md border-b border-slate-200">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+            <div class="flex items-center gap-3">
+                <div class="w-10 h-10 bg-brand-600 rounded-xl flex items-center justify-center text-white shadow-lg shadow-brand-500/30">
+                    <i class="ph-bold ph-chart-bar text-2xl"></i>
+                </div>
+                <div>
+                    <h1 class="font-bold text-xl tracking-tight text-slate-900">P-Value <span class="text-brand-600">Explorer</span></h1>
+                    <p class="text-xs text-slate-500 font-medium">Công cụ trực quan hóa thống kê</p>
+                </div>
+            </div>
+
+            <!-- Nav -->
+            <nav class="hidden md:flex gap-1 bg-slate-100 p-1 rounded-lg">
+                <button onclick="switchTab('concept')" class="nav-btn active px-4 py-2 text-sm font-medium rounded-md transition-all duration-200 text-slate-600 hover:text-slate-900" data-target="concept">
+                    <i class="ph ph-lightbulb mr-1.5"></i> Bản chất
+                </button>
+                <button onclick="switchTab('lab')" class="nav-btn px-4 py-2 text-sm font-medium rounded-md transition-all duration-200 text-slate-600 hover:text-slate-900" data-target="lab">
+                    <i class="ph ph-sliders-horizontal mr-1.5"></i> Mô phỏng
+                </button>
+                <button onclick="switchTab('traps')" class="nav-btn px-4 py-2 text-sm font-medium rounded-md transition-all duration-200 text-slate-600 hover:text-slate-900" data-target="traps">
+                    <i class="ph ph-warning mr-1.5"></i> Lưu ý
+                </button>
+            </nav>
+            
+             <button class="md:hidden p-2 text-slate-600" onclick="alert('Vui lòng sử dụng màn hình lớn hơn để có trải nghiệm tốt nhất!')">
+                <i class="ph ph-list text-2xl"></i>
+            </button>
+        </div>
+    </header>
+
+    <main class="flex-grow container mx-auto px-4 py-8 max-w-7xl">
+        
+        <!-- SECTION 1: CONCEPT -->
+        <section id="concept" class="tab-content block animate-fade-in">
+            <div class="max-w-4xl mx-auto text-center mb-12">
+                <h2 class="text-3xl md:text-4xl font-bold text-slate-900 mb-6 leading-tight">
+                    P-Value: Thước đo <span class="text-transparent bg-clip-text bg-gradient-to-r from-brand-600 to-emerald-500">Bằng chứng chống lại H0</span>
+                </h2>
+                <p class="text-base text-slate-600 leading-relaxed max-w-3xl mx-auto">
+                    Trong kiểm định thống kê, chúng ta không bao giờ chứng minh trực tiếp điều mình muốn (H1). Thay vào đó, chúng ta giả định điều ngược lại (H0) là đúng, và xem dữ liệu thu được có "mâu thuẫn" với giả định đó hay không.
+                    <br><br>
+                    <strong>P-value</strong> trả lời câu hỏi: <em>"Nếu H0 là đúng, thì xác suất để ngẫu nhiên thu được bộ dữ liệu này là bao nhiêu?"</em>
+                </p>
+            </div>
+
+            <div class="grid md:grid-cols-2 gap-8 items-stretch">
+                <!-- Card 1: H0 -->
+                <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 hover:border-slate-400 transition-all flex flex-col">
+                    <div class="flex items-center gap-3 mb-4 pb-4 border-b border-slate-100">
+                        <div class="w-10 h-10 bg-slate-100 rounded-lg flex items-center justify-center text-slate-600 text-xl">
+                            <span class="font-bold">H0</span>
+                        </div>
+                        <div>
+                            <h3 class="text-lg font-bold text-slate-900">Giả thuyết Không (Null Hypothesis)</h3>
+                            <p class="text-xs text-slate-500">Trạng thái mặc định</p>
+                        </div>
+                    </div>
+                    
+                    <div class="flex-grow space-y-4 text-sm text-slate-600">
+                        <p><strong>Định nghĩa:</strong> Giả định rằng không có hiệu ứng, không có sự khác biệt, hoặc mọi thứ diễn ra hoàn toàn ngẫu nhiên.</p>
+                        <div class="bg-slate-50 p-3 rounded-lg border border-slate-100">
+                            <p class="font-medium text-slate-700 mb-1">Ví dụ:</p>
+                            <ul class="list-disc pl-4 space-y-1">
+                                <li>"Thuốc mới KHÔNG có tác dụng gì cả."</li>
+                                <li>"Tỷ lệ click của giao diện A và B là NHƯ NHAU."</li>
+                                <li>"Mean Difference = 0"</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Card 2: H1 -->
+                <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 hover:border-brand-400 transition-all flex flex-col">
+                    <div class="flex items-center gap-3 mb-4 pb-4 border-b border-slate-100">
+                        <div class="w-10 h-10 bg-brand-100 rounded-lg flex items-center justify-center text-brand-600 text-xl">
+                            <span class="font-bold">H1</span>
+                        </div>
+                        <div>
+                            <h3 class="text-lg font-bold text-slate-900">Giả thuyết Đối (Alternative Hypothesis)</h3>
+                            <p class="text-xs text-slate-500">Điều bạn muốn chứng minh</p>
+                        </div>
+                    </div>
+                    
+                    <div class="flex-grow space-y-4 text-sm text-slate-600">
+                        <p><strong>Định nghĩa:</strong> Giả định rằng có một hiệu ứng thực sự, có sự khác biệt có ý nghĩa thống kê.</p>
+                        <div class="bg-brand-50 p-3 rounded-lg border border-brand-100">
+                            <p class="font-medium text-brand-700 mb-1">Ví dụ:</p>
+                            <ul class="list-disc pl-4 space-y-1">
+                                <li>"Thuốc mới CÓ tác dụng chữa bệnh."</li>
+                                <li>"Giao diện B có tỷ lệ click CAO HƠN giao diện A."</li>
+                                <li>"Mean Difference ≠ 0"</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="mt-12 bg-slate-100 rounded-xl p-8 text-center max-w-3xl mx-auto border border-slate-200">
+                <h4 class="font-bold text-slate-800 mb-4">Quy tắc ra quyết định (Decision Rule)</h4>
+                <div class="flex flex-col md:flex-row items-center justify-center gap-6 text-sm">
+                    <div class="bg-white p-4 rounded-lg shadow-sm w-full">
+                        <div class="text-brand-600 font-bold text-lg mb-1">P-value &lt; Alpha</div>
+                        <div class="text-slate-500 text-xs mb-2">(Thường là 0.05)</div>
+                        <div class="font-medium text-slate-800">→ Bác bỏ H0</div>
+                        <div class="text-slate-600">"Kết quả quá hiếm gặp nếu H0 đúng."</div>
+                        <div class="mt-2 text-brand-600 font-bold text-xs uppercase">Chấp nhận H1</div>
+                    </div>
+                    
+                    <div class="text-slate-400 font-bold text-xl">VS</div>
+                    
+                    <div class="bg-white p-4 rounded-lg shadow-sm w-full">
+                        <div class="text-slate-600 font-bold text-lg mb-1">P-value &ge; Alpha</div>
+                        <div class="text-slate-500 text-xs mb-2">(Thường là 0.05)</div>
+                        <div class="font-medium text-slate-800">→ Không đủ bằng chứng bác bỏ H0</div>
+                        <div class="text-slate-600">"Kết quả này hoàn toàn có thể xảy ra ngẫu nhiên."</div>
+                        <div class="mt-2 text-slate-500 font-bold text-xs uppercase">Giữ nguyên H0</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="mt-12 text-center">
+                 <button onclick="switchTab('lab')" class="px-8 py-3 bg-slate-900 hover:bg-slate-800 text-white font-bold rounded-lg transition-all shadow-lg flex items-center gap-2 mx-auto">
+                    Thử nghiệm với dữ liệu giả lập <i class="ph-bold ph-arrow-right"></i>
+                </button>
+            </div>
+        </section>
+
+        <!-- SECTION 2: LAB (CORE) -->
+        <section id="lab" class="tab-content hidden animate-slide-up">
+            <div class="grid lg:grid-cols-12 gap-6 h-full">
+                
+                <!-- Controls Sidebar -->
+                <div class="lg:col-span-4 space-y-6">
+                    <div class="glass-panel p-6 rounded-2xl sticky top-24">
+                        <div class="flex items-center gap-2 mb-6">
+                            <i class="ph-duotone ph-faders text-slate-600 text-xl"></i>
+                            <h3 class="font-bold text-slate-900 text-lg">Tham số đầu vào</h3>
+                        </div>
+
+                        <!-- Z-Score Control -->
+                        <div class="mb-8">
+                            <div class="flex justify-between items-end mb-2">
+                                <label class="text-sm font-medium text-slate-700">Kết quả kiểm định (Z-Score)</label>
+                                <span class="text-xs font-mono bg-brand-100 text-brand-700 px-2 py-0.5 rounded" id="val-z">2.00</span>
+                            </div>
+                            <input type="range" id="input-z" min="0" max="4" step="0.01" value="2.00" class="w-full accent-brand-600">
+                            <p class="text-xs text-slate-500 mt-2 text-justify">
+                                Z-Score biểu thị khoảng cách từ dữ liệu của bạn đến giá trị trung bình (giả định H0). Z càng lớn nghĩa là dữ liệu càng "khác biệt" so với bình thường.
+                            </p>
+                        </div>
+
+                        <hr class="border-slate-100 my-6">
+
+                        <!-- Alpha Control -->
+                        <div class="mb-4">
+                            <div class="flex justify-between items-center mb-3">
+                                <label class="text-sm font-medium text-slate-700">Mức ý nghĩa (Alpha α)</label>
+                                <span class="text-xs font-mono bg-slate-100 text-slate-600 px-2 py-0.5 rounded" id="val-alpha">0.05</span>
+                            </div>
+                            <div class="grid grid-cols-3 gap-2">
+                                <button class="alpha-btn px-3 py-2 text-xs font-medium border border-slate-200 rounded hover:bg-slate-50" data-val="0.10">0.10 (Lỏng)</button>
+                                <button class="alpha-btn active px-3 py-2 text-xs font-medium border border-slate-200 rounded hover:bg-slate-50 bg-slate-800 text-white" data-val="0.05">0.05 (Chuẩn)</button>
+                                <button class="alpha-btn px-3 py-2 text-xs font-medium border border-slate-200 rounded hover:bg-slate-50" data-val="0.01">0.01 (Chặt)</button>
+                            </div>
+                            <p class="text-xs text-slate-500 mt-2 text-justify">
+                                Alpha là ngưỡng xác suất rủi ro tối đa mà bạn chấp nhận khi bác bỏ H0. Alpha = 0.05 nghĩa là chấp nhận 5% khả năng kết luận sai (dương tính giả).
+                            </p>
+                        </div>
+                        
+                         <!-- Test Type Control -->
+                         <div class="mt-6">
+                            <label class="flex items-center gap-3 cursor-pointer">
+                                <input type="checkbox" id="input-two-tailed" checked class="w-4 h-4 accent-brand-600 rounded">
+                                <span class="text-sm font-medium text-slate-700">Kiểm định 2 phía (Two-tailed)</span>
+                            </label>
+                            <p class="text-xs text-slate-400 mt-1 ml-7">Kiểm tra khả năng khác biệt theo cả hai hướng (lớn hơn hoặc nhỏ hơn).</p>
+                        </div>
+
+                    </div>
+                </div>
+
+                <!-- Visualization Area -->
+                <div class="lg:col-span-8 space-y-6">
+                    
+                    <!-- Result Header -->
+                    <div class="grid grid-cols-2 gap-4">
+                        <div class="glass-panel p-4 rounded-xl flex flex-col justify-center border-l-4" id="p-result-card">
+                            <div class="text-xs text-slate-500 font-medium uppercase tracking-wider mb-1">P-Value (Diện tích đuôi)</div>
+                            <div class="flex items-baseline gap-2">
+                                <div class="text-3xl font-mono font-bold text-slate-800" id="res-p">0.0455</div>
+                                <div class="text-xs font-bold px-2 py-0.5 rounded bg-slate-100 text-slate-500" id="res-sig-badge">Sig.</div>
+                            </div>
+                        </div>
+                        <div class="glass-panel p-4 rounded-xl flex flex-col justify-center">
+                            <div class="text-xs text-slate-500 font-medium uppercase tracking-wider mb-1">Kết luận thống kê</div>
+                            <div class="text-sm font-medium text-slate-800 leading-tight" id="res-text">
+                                Bác bỏ giả thuyết H0.
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Canvas -->
+                    <div class="glass-panel p-1 rounded-2xl shadow-sm bg-white overflow-hidden relative">
+                         <!-- Legend -->
+                         <div class="absolute top-4 left-4 z-10 flex flex-col sm:flex-row gap-2 sm:gap-4 text-xs font-medium bg-white/90 p-2 rounded-lg backdrop-blur shadow-sm border border-slate-100">
+                            <div class="flex items-center gap-2">
+                                <span class="w-3 h-3 rounded-full border-2 border-slate-400"></span> Phân phối chuẩn (H0 đúng)
+                            </div>
+                            <div class="flex items-center gap-2">
+                                <span class="w-3 h-3 rounded-full bg-brand-500 opacity-50"></span> P-Value (Xác suất)
+                            </div>
+                            <div class="flex items-center gap-2">
+                                <span class="w-1 h-4 bg-danger-500"></span> Giới hạn Alpha
+                            </div>
+                        </div>
+
+                        <div class="canvas-container bg-gradient-to-b from-slate-50 to-white">
+                            <canvas id="pValueCanvas"></canvas>
+                        </div>
+                    </div>
+
+                    <!-- Explanation Box -->
+                    <div class="bg-slate-900 text-white p-6 rounded-xl relative overflow-hidden shadow-lg">
+                        <i class="ph-fill ph-quotes text-6xl text-slate-700 absolute top-2 right-4 opacity-50"></i>
+                        <h4 class="font-bold text-lg mb-2 text-brand-400">Diễn giải kết quả:</h4>
+                        <p class="text-slate-300 text-sm leading-relaxed" id="human-explanation">
+                            ...
+                        </p>
+                    </div>
+
+                </div>
+            </div>
+        </section>
+
+        <!-- SECTION 3: TRAPS -->
+        <section id="traps" class="tab-content hidden animate-fade-in">
+            <div class="max-w-5xl mx-auto">
+                <h2 class="text-3xl font-bold text-center text-slate-900 mb-4">Các hiểu lầm phổ biến & Lưu ý</h2>
+                <p class="text-center text-slate-500 mb-10 max-w-2xl mx-auto">P-value là một công cụ mạnh mẽ nhưng thường bị lạm dụng hoặc hiểu sai trong phân tích dữ liệu.</p>
+                
+                <div class="grid md:grid-cols-3 gap-6">
+                    
+                    <div class="bg-white p-6 rounded-xl border border-slate-200 shadow-sm hover:shadow-md transition-all">
+                        <div class="w-10 h-10 bg-red-100 text-red-600 rounded-lg flex items-center justify-center mb-4 text-xl">
+                            <i class="ph-bold ph-percent"></i>
+                        </div>
+                        <h3 class="font-bold text-slate-900 mb-2">Hiểu lầm về Xác suất đúng sai</h3>
+                        <p class="text-sm text-slate-600 leading-relaxed mb-2">
+                            <strong>Sai:</strong> "P = 0.04 nghĩa là có 96% khả năng giả thuyết H1 là đúng."
+                        </p>
+                        <p class="text-sm text-slate-800 leading-relaxed font-medium">
+                            <strong>Đúng:</strong> P-value chỉ cho biết dữ liệu này hiếm gặp đến mức nào nếu H0 đúng. Nó không tính toán xác suất H1 đúng.
+                        </p>
+                    </div>
+
+                    <div class="bg-white p-6 rounded-xl border border-slate-200 shadow-sm hover:shadow-md transition-all">
+                        <div class="w-10 h-10 bg-orange-100 text-orange-600 rounded-lg flex items-center justify-center mb-4 text-xl">
+                            <i class="ph-bold ph-magnifying-glass"></i>
+                        </div>
+                        <h3 class="font-bold text-slate-900 mb-2">P-Hacking (Data Dredging)</h3>
+                        <p class="text-sm text-slate-600 leading-relaxed">
+                            Đây là hành vi phi đạo đức trong khoa học dữ liệu.
+                            Chạy thử nghiệm trên 100 biến số khác nhau cho đến khi ngẫu nhiên tìm được một biến có P < 0.05, sau đó chỉ báo cáo kết quả này mà giấu đi 99 kết quả thất bại.
+                        </p>
+                    </div>
+
+                    <div class="bg-white p-6 rounded-xl border border-slate-200 shadow-sm hover:shadow-md transition-all">
+                        <div class="w-10 h-10 bg-blue-100 text-blue-600 rounded-lg flex items-center justify-center mb-4 text-xl">
+                            <i class="ph-bold ph-ruler"></i>
+                        </div>
+                        <h3 class="font-bold text-slate-900 mb-2">Statistical vs Practical Significance</h3>
+                        <p class="text-sm text-slate-600 leading-relaxed">
+                            Với dữ liệu lớn (Big Data), ngay cả một sự khác biệt cực nhỏ (ví dụ: thuốc giúp khỏi nhanh hơn 1 giây) cũng có thể cho P < 0.001 (Có ý nghĩa thống kê).
+                            <br>Tuy nhiên, về mặt thực tế (Business/Clinical), sự khác biệt này có thể hoàn toàn vô nghĩa.
+                        </p>
+                    </div>
+
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <footer class="bg-white border-t border-slate-200 py-8 mt-auto">
+        <div class="container mx-auto px-4 text-center">
+            <p class="text-slate-400 font-mono text-xs">
+                (c) duyetbot | Built for Data Engineers
+            </p>
+        </div>
+    </footer>
+
+    <!-- LOGIC -->
+    <script>
+        // --- CONSTANTS ---
+        // Phân phối chuẩn hóa (Mean=0, SD=1)
+        const jStat = {
+            normalPDF: function(x) {
+                return (1 / Math.sqrt(2 * Math.PI)) * Math.exp(-0.5 * x * x);
+            },
+            // Cumulative Distribution Function (Standard Normal) - Approximation
+            normalCDF: function(z) {
+                // Constants
+                var t = 1 / (1 + 0.2316419 * Math.abs(z));
+                var d = 0.3989423 * Math.exp(-z * z / 2);
+                var p = d * t * (0.3193815 + t * (-0.3565638 + t * (1.781478 + t * (-1.821256 + t * 1.330274))));
+                if (z > 0) return 1 - p;
+                return p;
+            }
+        };
+
+        // --- STATE ---
+        const state = {
+            zScore: 2.0,
+            alpha: 0.05,
+            twoTailed: true
+        };
+
+        // --- DOM ---
+        const els = {
+            inputZ: document.getElementById('input-z'),
+            dispZ: document.getElementById('val-z'),
+            btnsAlpha: document.querySelectorAll('.alpha-btn'),
+            dispAlpha: document.getElementById('val-alpha'),
+            checkTwoTailed: document.getElementById('input-two-tailed'),
+            
+            resP: document.getElementById('res-p'),
+            resSigBadge: document.getElementById('res-sig-badge'),
+            resText: document.getElementById('res-text'),
+            pResultCard: document.getElementById('p-result-card'),
+            humanExplanation: document.getElementById('human-explanation'),
+            
+            canvas: document.getElementById('pValueCanvas')
+        };
+        const ctx = els.canvas.getContext('2d');
+
+        // --- INIT ---
+        function init() {
+            // Resize Canvas
+            resizeCanvas();
+            window.addEventListener('resize', () => { resizeCanvas(); draw(); });
+
+            // Events
+            els.inputZ.addEventListener('input', (e) => {
+                state.zScore = parseFloat(e.target.value);
+                els.dispZ.innerText = state.zScore.toFixed(2);
+                update();
+            });
+
+            els.btnsAlpha.forEach(btn => {
+                btn.addEventListener('click', () => {
+                    // UI Update
+                    els.btnsAlpha.forEach(b => {
+                        b.classList.remove('active', 'bg-slate-800', 'text-white');
+                        b.classList.add('hover:bg-slate-50');
+                    });
+                    btn.classList.add('active', 'bg-slate-800', 'text-white');
+                    btn.classList.remove('hover:bg-slate-50');
+
+                    // Logic Update
+                    state.alpha = parseFloat(btn.dataset.val);
+                    els.dispAlpha.innerText = state.alpha.toFixed(2);
+                    update();
+                });
+            });
+
+            els.checkTwoTailed.addEventListener('change', (e) => {
+                state.twoTailed = e.target.checked;
+                update();
+            });
+
+            // Initial Draw
+            update();
+            
+            // Default Tab
+            switchTab('concept');
+        }
+
+        function resizeCanvas() {
+            const container = els.canvas.parentElement;
+            els.canvas.width = container.clientWidth * 2;
+            els.canvas.height = container.clientHeight * 2;
+            els.canvas.style.width = container.clientWidth + 'px';
+            els.canvas.style.height = container.clientHeight + 'px';
+            ctx.scale(2, 2);
+        }
+
+        // --- CORE LOGIC ---
+        function update() {
+            // 1. Calculate P-Value
+            // Area to the right of Z (one-tailed)
+            const areaRight = 1 - jStat.normalCDF(Math.abs(state.zScore));
+            
+            let pValue = areaRight;
+            if (state.twoTailed) {
+                pValue = areaRight * 2;
+            }
+
+            // Limit precision issues close to 0
+            if (pValue < 0.0001) pValue = 0.0001;
+
+            // 2. Determine Significance
+            const isSignificant = pValue < state.alpha;
+
+            // 3. Update UI
+            els.resP.innerText = pValue < 0.001 ? "< 0.001" : pValue.toFixed(4);
+            
+            if (isSignificant) {
+                els.resSigBadge.innerText = "Significant";
+                els.resSigBadge.className = "text-xs font-bold px-2 py-0.5 rounded bg-brand-100 text-brand-700";
+                els.pResultCard.className = "glass-panel p-4 rounded-xl flex flex-col justify-center border-l-4 border-brand-500 bg-brand-50/50";
+                
+                els.resText.innerHTML = `<span class="text-brand-600 font-bold">Thành công (Significant)!</span><br><span class="text-slate-500 font-normal text-xs">P-value < Alpha (${state.alpha})</span>`;
+                
+                els.humanExplanation.innerHTML = `
+                    Dựa trên mức ý nghĩa Alpha = ${state.alpha}:<br>
+                    Giá trị P-value tính được là <strong>${(pValue*100).toFixed(2)}%</strong>, nhỏ hơn ngưỡng rủi ro cho phép.
+                    <br><br>
+                    <strong>Kết luận:</strong> Sự khác biệt quan sát được là có ý nghĩa thống kê (Statistically Significant). Chúng ta có đủ cơ sở để bác bỏ H0 và chấp nhận H1. Khả năng kết quả này xảy ra ngẫu nhiên là rất thấp.
+                `;
+            } else {
+                els.resSigBadge.innerText = "Not Sig.";
+                els.resSigBadge.className = "text-xs font-bold px-2 py-0.5 rounded bg-slate-200 text-slate-500";
+                els.pResultCard.className = "glass-panel p-4 rounded-xl flex flex-col justify-center border-l-4 border-slate-300";
+                
+                els.resText.innerHTML = `<span class="text-slate-500 font-bold">Chưa đủ bằng chứng.</span><br><span class="text-slate-400 font-normal text-xs">P-value ≥ Alpha (${state.alpha})</span>`;
+                
+                els.humanExplanation.innerHTML = `
+                    Dựa trên mức ý nghĩa Alpha = ${state.alpha}:<br>
+                    Giá trị P-value tính được là <strong>${(pValue*100).toFixed(2)}%</strong>, vẫn lớn hơn ngưỡng rủi ro.
+                    <br><br>
+                    <strong>Kết luận:</strong> Chưa đủ bằng chứng thống kê để bác bỏ H0. Sự khác biệt quan sát được hoàn toàn có thể là do biến động ngẫu nhiên của dữ liệu.
+                `;
+            }
+
+            // 4. Draw
+            draw(pValue, isSignificant);
+        }
+
+        function draw(pValue, isSignificant) {
+            const width = els.canvas.width / 2;
+            const height = els.canvas.height / 2;
+            ctx.clearRect(0, 0, width, height);
+
+            // Settings
+            const xMin = -4;
+            const xMax = 4;
+            const xScale = width / (xMax - xMin);
+            const yOffset = height - 30;
+            const yScale = (height * 0.8) / 0.4; // Max PDF is ~0.4
+
+            const mapX = (z) => (z - xMin) * xScale;
+            const mapY = (y) => yOffset - (y * yScale);
+
+            // Draw H0 Bell Curve
+            ctx.beginPath();
+            ctx.moveTo(mapX(xMin), mapY(jStat.normalPDF(xMin)));
+            for (let z = xMin; z <= xMax; z += 0.1) {
+                ctx.lineTo(mapX(z), mapY(jStat.normalPDF(z)));
+            }
+            ctx.strokeStyle = "#94a3b8"; // slate-400
+            ctx.lineWidth = 2;
+            ctx.stroke();
+
+            // Function to fill area
+            const fillTail = (startZ, endZ) => {
+                ctx.beginPath();
+                ctx.moveTo(mapX(startZ), yOffset);
+                for (let z = startZ; z <= endZ; z += 0.05) {
+                    ctx.lineTo(mapX(z), mapY(jStat.normalPDF(z)));
+                }
+                ctx.lineTo(mapX(endZ), yOffset);
+                ctx.closePath();
+                ctx.fillStyle = isSignificant ? "rgba(34, 197, 94, 0.4)" : "rgba(148, 163, 184, 0.4)"; // brand-500 vs slate
+                ctx.fill();
+            };
+
+            // Fill Right Tail
+            fillTail(Math.abs(state.zScore), 4);
+            
+            // Fill Left Tail (if two-tailed)
+            if (state.twoTailed) {
+                fillTail(-4, -Math.abs(state.zScore));
+            }
+
+            // Draw Critical Alpha Lines (Z-critical based on Alpha)
+            // Approx Z-critical for common alphas (Two-tailed)
+            let zCrit = 1.96; // 0.05
+            if (Math.abs(state.alpha - 0.01) < 0.001) zCrit = 2.576;
+            if (Math.abs(state.alpha - 0.10) < 0.001) zCrit = 1.645;
+            
+            // Adjust for one-tailed if needed (but currently UI only has two-tailed toggle visual logic mostly fits)
+            if (!state.twoTailed) {
+                 if (Math.abs(state.alpha - 0.05) < 0.001) zCrit = 1.645;
+                 if (Math.abs(state.alpha - 0.01) < 0.001) zCrit = 2.33;
+                 if (Math.abs(state.alpha - 0.10) < 0.001) zCrit = 1.28;
+            }
+
+            // Draw Z Critical Line (Red)
+            ctx.beginPath();
+            ctx.moveTo(mapX(zCrit), yOffset);
+            ctx.lineTo(mapX(zCrit), mapY(0.4)); // Go up high
+            ctx.strokeStyle = "#ef4444"; // danger-500
+            ctx.lineWidth = 2;
+            ctx.setLineDash([5, 5]);
+            ctx.stroke();
+            ctx.setLineDash([]);
+            
+            // Label Alpha
+            ctx.fillStyle = "#ef4444";
+            ctx.font = "10px Inter";
+            ctx.fillText("Alpha", mapX(zCrit) + 5, mapY(0.35));
+
+            if (state.twoTailed) {
+                ctx.beginPath();
+                ctx.moveTo(mapX(-zCrit), yOffset);
+                ctx.lineTo(mapX(-zCrit), mapY(0.4));
+                ctx.strokeStyle = "#ef4444";
+                ctx.lineWidth = 2;
+                ctx.setLineDash([5, 5]);
+                ctx.stroke();
+                ctx.setLineDash([]);
+            }
+
+            // Draw Observed Z Line (Green/Black)
+            const obsZ = Math.abs(state.zScore);
+            ctx.beginPath();
+            ctx.moveTo(mapX(obsZ), yOffset);
+            ctx.lineTo(mapX(obsZ), mapY(jStat.normalPDF(obsZ)));
+            ctx.strokeStyle = isSignificant ? "#16a34a" : "#1e293b"; // brand-600 or slate-800
+            ctx.lineWidth = 3;
+            ctx.stroke();
+
+            // Label Observation
+            ctx.fillStyle = isSignificant ? "#16a34a" : "#1e293b";
+            ctx.font = "bold 12px Inter";
+            ctx.textAlign = "center";
+            ctx.fillText("Kết quả (Z)", mapX(obsZ), mapY(jStat.normalPDF(obsZ)) - 10);
+            ctx.textAlign = "left";
+
+            // Baseline
+            ctx.beginPath();
+            ctx.moveTo(0, yOffset);
+            ctx.lineTo(width, yOffset);
+            ctx.strokeStyle = "#cbd5e1";
+            ctx.stroke();
+        }
+
+        window.switchTab = function(tabId) {
+            // UI
+            document.querySelectorAll('.nav-btn').forEach(btn => {
+                if (btn.dataset.target === tabId) {
+                    btn.classList.add('bg-slate-200', 'text-slate-900', 'shadow-sm');
+                    btn.classList.remove('text-slate-600');
+                } else {
+                    btn.classList.remove('bg-slate-200', 'text-slate-900', 'shadow-sm');
+                    btn.classList.add('text-slate-600');
+                }
+            });
+
+            // Content
+            document.querySelectorAll('.tab-content').forEach(content => {
+                content.classList.toggle('hidden', content.id !== tabId);
+            });
+
+            if (tabId === 'lab') {
+                setTimeout(() => { resizeCanvas(); update(); }, 50);
+            }
+        }
+
+        init();
+    </script>
+</body>
+</html>
