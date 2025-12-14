@@ -1,0 +1,614 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Moderated Regression: Phân tích Điều tiết</title>
+    
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Icons (Phosphor Icons) -->
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+
+    <!-- MathJax for LaTeX -->
+    <script>
+        window.MathJax = {
+            tex: {
+                inlineMath: [['$', '$'], ['\\(', '\\)']]
+            },
+            svg: {
+                fontCache: 'global'
+            }
+        };
+    </script>
+    <script type="text/javascript" id="MathJax-script" async
+        src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js">
+    </script>
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                        mono: ['JetBrains Mono', 'monospace'],
+                    },
+                    colors: {
+                        brand: {
+                            50: '#f8fafc',
+                            100: '#f1f5f9',
+                            500: '#64748b', // Slate theme for Professional look
+                            600: '#475569',
+                            700: '#334155',
+                            900: '#0f172a',
+                        },
+                        mod: {
+                            low: '#3b82f6',   // Blue for Low W
+                            med: '#64748b',   // Slate for Mean W
+                            high: '#ef4444',  // Red for High W
+                        }
+                    },
+                    animation: {
+                        'fade-in': 'fadeIn 0.5s ease-out',
+                        'slide-up': 'slideUp 0.5s ease-out',
+                    },
+                    keyframes: {
+                        fadeIn: {
+                            '0%': { opacity: '0' },
+                            '100%': { opacity: '1' },
+                        },
+                        slideUp: {
+                            '0%': { transform: 'translateY(20px)', opacity: '0' },
+                            '100%': { transform: 'translateY(0)', opacity: '1' },
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: #f1f5f9; }
+        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+
+        input[type=range] { -webkit-appearance: none; background: transparent; }
+        input[type=range]::-webkit-slider-thumb {
+            -webkit-appearance: none; height: 18px; width: 18px; border-radius: 50%;
+            background: #ffffff; border: 2px solid #475569; cursor: pointer;
+            margin-top: -7px; box-shadow: 0 2px 6px rgba(0,0,0,0.1); transition: transform 0.1s;
+        }
+        input[type=range]::-webkit-slider-thumb:hover { transform: scale(1.1); }
+        input[type=range]::-webkit-slider-runnable-track {
+            width: 100%; height: 4px; cursor: pointer; background: #e2e8f0; border-radius: 4px;
+        }
+        
+        .glass-panel {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.5);
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        }
+        .canvas-container { position: relative; width: 100%; height: 450px; }
+    </style>
+</head>
+<body class="bg-slate-50 text-slate-800 antialiased min-h-screen flex flex-col">
+
+    <!-- Header -->
+    <header class="sticky top-0 z-50 bg-white/90 backdrop-blur border-b border-slate-200">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+            <div class="flex items-center gap-3">
+                <div class="w-10 h-10 bg-slate-800 rounded flex items-center justify-center text-white shadow-sm">
+                    <i class="ph-bold ph-git-merge text-2xl"></i>
+                </div>
+                <div>
+                    <h1 class="font-bold text-lg tracking-tight text-slate-900">Moderation Analysis</h1>
+                    <p class="text-xs text-slate-500 font-medium">Công cụ Phân tích Hồi quy Điều tiết</p>
+                </div>
+            </div>
+
+            <!-- Nav -->
+            <nav class="hidden md:flex gap-1 bg-slate-100 p-1 rounded-lg border border-slate-200">
+                <button onclick="switchTab('concept')" class="nav-btn active px-4 py-2 text-sm font-medium rounded-md transition-all duration-200 text-slate-600 hover:text-slate-900 hover:bg-white" data-target="concept">
+                    <i class="ph ph-article mr-1.5"></i> Lý thuyết
+                </button>
+                <button onclick="switchTab('lab')" class="nav-btn px-4 py-2 text-sm font-medium rounded-md transition-all duration-200 text-slate-600 hover:text-slate-900 hover:bg-white" data-target="lab">
+                    <i class="ph ph-chart-line-up mr-1.5"></i> Mô phỏng
+                </button>
+                <button onclick="switchTab('glossary')" class="nav-btn px-4 py-2 text-sm font-medium rounded-md transition-all duration-200 text-slate-600 hover:text-slate-900 hover:bg-white" data-target="glossary">
+                    <i class="ph ph-book-open-text mr-1.5"></i> Thuật ngữ
+                </button>
+            </nav>
+            
+             <button class="md:hidden p-2 text-slate-600" onclick="alert('Vui lòng sử dụng màn hình lớn hơn để có trải nghiệm tốt nhất!')">
+                <i class="ph ph-list text-2xl"></i>
+            </button>
+        </div>
+    </header>
+
+    <main class="flex-grow container mx-auto px-4 py-8 max-w-7xl">
+        
+        <!-- SECTION 1: CONCEPT -->
+        <section id="concept" class="tab-content block animate-fade-in">
+            <div class="max-w-4xl mx-auto text-center mb-12">
+                <h2 class="text-3xl font-bold text-slate-900 mb-4 leading-tight">
+                    Mô hình Hồi quy Điều tiết <br> <span class="text-slate-500 font-normal text-2xl">(Moderated Regression Model)</span>
+                </h2>
+                <p class="text-base text-slate-600 leading-relaxed max-w-3xl mx-auto">
+                    Trong nghiên cứu tâm lý học, tác động của biến độc lập (X) lên biến phụ thuộc (Y) thường không cố định mà phụ thuộc vào mức độ của một biến thứ ba, gọi là <strong>Biến điều tiết (Moderator - W)</strong>.
+                    <br><br>
+                    Phân tích điều tiết giúp trả lời câu hỏi: <em>"Khi nào và đối với ai thì mối quan hệ giữa X và Y xảy ra mạnh nhất hoặc yếu nhất?"</em>
+                </p>
+            </div>
+
+            <div class="grid md:grid-cols-2 gap-8 items-center py-8">
+                <!-- Visual Formula -->
+                <div class="flex flex-col items-center justify-center gap-6 select-none bg-white p-8 rounded border border-slate-200 shadow-sm relative overflow-hidden">
+                    <div class="absolute top-0 left-0 w-1 h-full bg-slate-800"></div>
+                    
+                    <div class="font-serif text-xl md:text-2xl text-slate-800 tracking-wide mb-4 border-b pb-4 border-slate-100">
+                        $$Y = b_0 + b_1X + b_2W + b_3(X \cdot W) + \epsilon$$
+                    </div>
+
+                    <div class="w-full space-y-3">
+                        <div class="flex items-center gap-3 text-sm border-b border-slate-50 pb-2">
+                            <div class="w-8 h-8 rounded bg-slate-100 text-slate-700 flex items-center justify-center font-bold font-serif">Y</div>
+                            <div>
+                                <div class="font-bold text-slate-800">Dependent Variable</div>
+                                <div class="text-slate-500">Biến phụ thuộc (VD: Điểm thi).</div>
+                            </div>
+                        </div>
+                        <div class="flex items-center gap-3 text-sm border-b border-slate-50 pb-2">
+                            <div class="w-8 h-8 rounded bg-slate-100 text-slate-700 flex items-center justify-center font-bold font-serif">X</div>
+                            <div>
+                                <div class="font-bold text-slate-800">Independent Variable</div>
+                                <div class="text-slate-500">Biến độc lập (VD: Thời gian ôn tập).</div>
+                            </div>
+                        </div>
+                         <div class="flex items-center gap-3 text-sm border-b border-slate-50 pb-2">
+                            <div class="w-8 h-8 rounded bg-orange-50 text-orange-700 flex items-center justify-center font-bold font-serif">W</div>
+                            <div>
+                                <div class="font-bold text-slate-800">Moderator</div>
+                                <div class="text-slate-500">Biến điều tiết (VD: Mức độ Lo âu).</div>
+                            </div>
+                        </div>
+                         <div class="flex items-center gap-3 text-sm">
+                            <div class="w-8 h-8 rounded bg-blue-50 text-blue-700 flex items-center justify-center font-bold text-xs font-serif">X·W</div>
+                            <div>
+                                <div class="font-bold text-slate-800">Interaction Term</div>
+                                <div class="text-slate-500">Biến tương tác. Hệ số $b_3$ phản ánh hiệu ứng điều tiết.</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Example -->
+                <div class="space-y-6">
+                    <h3 class="text-lg font-bold text-slate-900 border-l-4 border-slate-800 pl-3">Ví dụ Minh họa:</h3>
+                    <div class="bg-slate-50 p-5 rounded border border-slate-200 text-slate-700 text-sm leading-relaxed">
+                        <strong>Giả thuyết nghiên cứu:</strong> Tác động của thời gian ôn tập (X) lên điểm số (Y) bị điều tiết bởi mức độ lo âu (W).
+                        <ul class="list-disc pl-5 mt-3 space-y-2">
+                            <li><strong>Điều kiện 1 (Lo âu thấp):</strong> Thời gian ôn tập có tác động tích cực mạnh lên điểm số (Hệ số góc lớn).</li>
+                            <li><strong>Điều kiện 2 (Lo âu cao):</strong> Thời gian ôn tập có tác động yếu hoặc không đáng kể lên điểm số (Hệ số góc nhỏ).</li>
+                        </ul>
+                        <p class="mt-4 text-slate-800 italic bg-white p-2 border border-slate-100 rounded">
+                            Kết luận: Hiệu quả của phương pháp học tập không đồng nhất mà phụ thuộc vào trạng thái tâm lý của sinh viên.
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="mt-8 text-center">
+                 <button onclick="switchTab('lab')" class="px-6 py-2 bg-slate-800 hover:bg-slate-700 text-white font-medium rounded transition-all shadow flex items-center gap-2 mx-auto">
+                    Truy cập Mô phỏng Tương tác <i class="ph-bold ph-arrow-right"></i>
+                </button>
+            </div>
+        </section>
+
+        <!-- SECTION 2: LAB (CORE) -->
+        <section id="lab" class="tab-content hidden animate-slide-up">
+            <div class="grid lg:grid-cols-12 gap-6 h-full">
+                
+                <!-- Controls Sidebar -->
+                <div class="lg:col-span-4 space-y-4">
+                    <div class="glass-panel p-5 rounded sticky top-24 max-h-[85vh] overflow-y-auto border border-slate-200">
+                        <div class="flex justify-between items-center mb-6 pb-4 border-b border-slate-100">
+                            <h3 class="font-bold text-slate-900 text-sm uppercase tracking-wider flex items-center gap-2">
+                                <i class="ph-duotone ph-sliders text-slate-600"></i> Tham số Hồi quy
+                            </h3>
+                        </div>
+
+                        <!-- b1: Main Effect X -->
+                        <div class="mb-6">
+                            <div class="flex justify-between items-end mb-2">
+                                <label class="text-xs font-bold text-slate-700">Tác động chính của X ($b_1$)</label>
+                                <span class="text-xs font-mono bg-slate-100 px-2 py-0.5 rounded border border-slate-200" id="val-b1">1.0</span>
+                            </div>
+                            <input type="range" id="input-b1" min="0" max="2" step="0.1" value="1.0" class="w-full accent-slate-800">
+                        </div>
+
+                        <!-- b2: Main Effect W -->
+                        <div class="mb-6">
+                            <div class="flex justify-between items-end mb-2">
+                                <label class="text-xs font-bold text-orange-700">Tác động chính của W ($b_2$)</label>
+                                <span class="text-xs font-mono bg-orange-50 text-orange-700 px-2 py-0.5 rounded border border-orange-100" id="val-b2">-0.5</span>
+                            </div>
+                            <input type="range" id="input-b2" min="-2" max="2" step="0.1" value="-0.5" class="w-full accent-orange-600">
+                            <p class="text-[10px] text-slate-500 mt-1">Hệ số âm biểu thị tác động tiêu cực.</p>
+                        </div>
+
+                        <!-- b3: Interaction -->
+                        <div class="mb-6 p-4 bg-blue-50/50 rounded border border-blue-100">
+                            <div class="flex justify-between items-end mb-2">
+                                <label class="text-xs font-bold text-blue-700 flex items-center gap-1">
+                                    Tác động Tương tác ($b_3$)
+                                </label>
+                                <span class="text-xs font-mono bg-white text-blue-700 px-2 py-0.5 rounded border border-blue-200" id="val-b3">-0.3</span>
+                            </div>
+                            <input type="range" id="input-b3" min="-0.8" max="0.5" step="0.05" value="-0.3" class="w-full accent-blue-600">
+                            <div class="text-[10px] text-blue-800 mt-2 space-y-1">
+                                <p><strong>$b_3 < 0$:</strong> Tác động của X giảm khi W tăng (Buffer effect).</p>
+                                <p><strong>$b_3 > 0$:</strong> Tác động của X tăng khi W tăng (Enhancing effect).</p>
+                            </div>
+                        </div>
+
+                        <!-- Intercept -->
+                        <div class="mb-6">
+                            <div class="flex justify-between items-end mb-2">
+                                <label class="text-xs font-bold text-slate-500">Hằng số ($b_0$)</label>
+                                <span class="text-xs font-mono bg-slate-100 px-2 py-0.5 rounded border border-slate-200" id="val-c">4.0</span>
+                            </div>
+                            <input type="range" id="input-c" min="0" max="8" step="0.5" value="4.0" class="w-full accent-slate-400">
+                        </div>
+                        
+                        <div class="flex items-center justify-between pt-4 border-t border-slate-100">
+                             <label class="text-xs font-medium text-slate-600">Mô phỏng lại dữ liệu</label>
+                             <button onclick="generateData()" class="text-xs bg-white border border-slate-200 hover:bg-slate-50 px-3 py-1.5 rounded transition-colors flex items-center gap-1 shadow-sm font-medium">
+                                <i class="ph-bold ph-arrows-clockwise"></i> Resample
+                            </button>
+                        </div>
+
+                    </div>
+                </div>
+
+                <!-- Visualization Area -->
+                <div class="lg:col-span-8 space-y-4">
+                    
+                    <!-- Canvas -->
+                    <div class="glass-panel p-1 rounded shadow-sm bg-white overflow-hidden relative h-full min-h-[500px] flex flex-col border border-slate-200">
+                         <!-- Legend -->
+                         <div class="absolute top-4 left-4 z-10 flex flex-col gap-2 text-xs font-medium bg-white/95 p-3 rounded border border-slate-200 shadow-sm">
+                            <div class="font-bold text-slate-800 uppercase text-[10px] mb-1 tracking-wider border-b pb-1">Phân nhóm Điều tiết (W)</div>
+                            <div class="flex items-center gap-2">
+                                <span class="w-2 h-2 rounded-full bg-red-500"></span> 
+                                <span class="w-6 h-0.5 bg-red-500"></span>
+                                Cao (+1 SD)
+                            </div>
+                            <div class="flex items-center gap-2">
+                                <span class="w-2 h-2 rounded-full bg-slate-500"></span> 
+                                <span class="w-6 h-0.5 bg-slate-500"></span>
+                                Trung bình (Mean)
+                            </div>
+                            <div class="flex items-center gap-2">
+                                <span class="w-2 h-2 rounded-full bg-blue-500"></span> 
+                                <span class="w-6 h-0.5 bg-blue-500"></span>
+                                Thấp (-1 SD)
+                            </div>
+                        </div>
+
+                        <div class="canvas-container bg-white cursor-crosshair flex-grow">
+                            <canvas id="modCanvas"></canvas>
+                        </div>
+                        
+                        <div class="p-3 bg-slate-50 border-t border-slate-200 text-xs text-slate-500 text-center font-mono">
+                            X Axis: Thời gian ôn tập (giờ) &nbsp;|&nbsp; Y Axis: Điểm số (0-10)
+                        </div>
+                    </div>
+
+                    <!-- Simple Slopes Explanation -->
+                    <div class="grid grid-cols-3 gap-4">
+                        <div class="bg-blue-50 p-4 rounded border border-blue-100 text-center">
+                            <div class="text-[10px] text-blue-600 uppercase font-bold tracking-wider mb-1">Simple Slope (Low W)</div>
+                            <div class="text-xl font-bold text-blue-700 font-mono" id="slope-low">--</div>
+                            <div class="text-[10px] text-blue-500 mt-1">Tác động mạnh</div>
+                        </div>
+                        <div class="bg-slate-50 p-4 rounded border border-slate-200 text-center">
+                            <div class="text-[10px] text-slate-600 uppercase font-bold tracking-wider mb-1">Simple Slope (Mean W)</div>
+                            <div class="text-xl font-bold text-slate-700 font-mono" id="slope-med">--</div>
+                            <div class="text-[10px] text-slate-500 mt-1">Tác động trung bình</div>
+                        </div>
+                        <div class="bg-red-50 p-4 rounded border border-red-100 text-center">
+                            <div class="text-[10px] text-red-600 uppercase font-bold tracking-wider mb-1">Simple Slope (High W)</div>
+                            <div class="text-xl font-bold text-red-700 font-mono" id="slope-high">--</div>
+                            <div class="text-[10px] text-red-500 mt-1">Tác động yếu</div>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        </section>
+
+        <!-- SECTION 3: GLOSSARY -->
+        <section id="glossary" class="tab-content hidden animate-fade-in">
+            <div class="max-w-4xl mx-auto">
+                <h2 class="text-3xl font-bold text-center text-slate-900 mb-2">Thuật ngữ Chuyên ngành</h2>
+                <p class="text-center text-slate-500 mb-10">Định nghĩa chuẩn cho Phân tích Điều tiết.</p>
+                
+                <div class="grid gap-4">
+                    
+                    <!-- Term 1 -->
+                    <div class="bg-white p-6 rounded border border-slate-200 shadow-sm flex flex-col md:flex-row gap-6">
+                        <div class="w-full md:w-1/3">
+                            <div class="text-slate-800 font-bold text-lg">Moderator Variable (W)</div>
+                            <div class="text-slate-400 font-mono text-xs">Biến điều tiết</div>
+                        </div>
+                        <div class="w-full md:w-2/3 text-slate-600 text-sm leading-relaxed">
+                            Biến định lượng hoặc định tính ảnh hưởng đến hướng và/hoặc cường độ của mối quan hệ giữa biến độc lập và biến phụ thuộc. 
+                            <br>Trong mô hình thống kê, biến điều tiết tương tác với biến độc lập.
+                        </div>
+                    </div>
+
+                    <!-- Term 2 -->
+                    <div class="bg-white p-6 rounded border border-slate-200 shadow-sm flex flex-col md:flex-row gap-6">
+                        <div class="w-full md:w-1/3">
+                            <div class="text-slate-800 font-bold text-lg">Interaction Effect</div>
+                            <div class="text-slate-400 font-mono text-xs">Hiệu ứng tương tác</div>
+                        </div>
+                        <div class="w-full md:w-2/3 text-slate-600 text-sm leading-relaxed">
+                            Xảy ra khi tác động của một biến độc lập lên biến phụ thuộc thay đổi tùy theo các mức độ của biến khác.
+                            Được kiểm định thông qua ý nghĩa thống kê của hệ số hồi quy $b_3$ (cho tích số $X \cdot W$).
+                        </div>
+                    </div>
+
+                    <!-- Term 3 -->
+                    <div class="bg-white p-6 rounded border border-slate-200 shadow-sm flex flex-col md:flex-row gap-6">
+                        <div class="w-full md:w-1/3">
+                            <div class="text-slate-800 font-bold text-lg">Simple Slopes Analysis</div>
+                            <div class="text-slate-400 font-mono text-xs">Phân tích độ dốc đơn giản</div>
+                        </div>
+                        <div class="w-full md:w-2/3 text-slate-600 text-sm leading-relaxed">
+                            Phương pháp hậu kiểm (post-hoc) dùng để thăm dò bản chất của tương tác. 
+                            Kỹ thuật này ước lượng phương trình hồi quy của Y lên X tại các giá trị điều kiện của W (thường là Mean, +1 SD, và -1 SD).
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <footer class="bg-white border-t border-slate-200 py-8 mt-auto">
+        <div class="container mx-auto px-4 text-center">
+            <p class="text-slate-400 font-mono text-xs">
+                (c) duyetbot | Academic Statistics Tools
+            </p>
+        </div>
+    </footer>
+
+    <!-- LOGIC SCRIPT -->
+    <script>
+        // --- STATE ---
+        const state = {
+            b1: 1.0,    // Effect of X (Study Hours)
+            b2: -0.5,   // Effect of W (Anxiety)
+            b3: -0.3,   // Interaction (X*W)
+            c: 4.0,     // Intercept
+            noiseLevel: 1.0,
+            points: []  // Array of {x, w, y}
+        };
+
+        // --- DOM ELEMENTS ---
+        const els = {
+            inB1: document.getElementById('input-b1'),
+            inB2: document.getElementById('input-b2'),
+            inB3: document.getElementById('input-b3'),
+            inC: document.getElementById('input-c'),
+            
+            lblB1: document.getElementById('val-b1'),
+            lblB2: document.getElementById('val-b2'),
+            lblB3: document.getElementById('val-b3'),
+            lblC: document.getElementById('val-c'),
+            
+            outSlopeLow: document.getElementById('slope-low'),
+            outSlopeMed: document.getElementById('slope-med'),
+            outSlopeHigh: document.getElementById('slope-high'),
+            
+            canvas: document.getElementById('modCanvas')
+        };
+        const ctx = els.canvas.getContext('2d');
+
+        // --- INIT ---
+        function init() {
+            resizeCanvas();
+            window.addEventListener('resize', () => { resizeCanvas(); draw(); });
+
+            // Event Listeners
+            const updateState = (key, el, lbl, fixed=1) => {
+                state[key] = parseFloat(el.value);
+                lbl.innerText = state[key].toFixed(fixed);
+                updateSimpleSlopes(); 
+                recalcY();
+                draw();
+            };
+
+            els.inB1.addEventListener('input', (e) => updateState('b1', e.target, els.lblB1));
+            els.inB2.addEventListener('input', (e) => updateState('b2', e.target, els.lblB2));
+            els.inB3.addEventListener('input', (e) => updateState('b3', e.target, els.lblB3, 2));
+            els.inC.addEventListener('input', (e) => updateState('c', e.target, els.lblC));
+
+            // Start
+            generateData();
+            updateSimpleSlopes();
+            switchTab('concept');
+            
+            // Re-render MathJax
+            if (window.MathJax) {
+                window.MathJax.typeset();
+            }
+        }
+
+        function resizeCanvas() {
+            const container = els.canvas.parentElement;
+            els.canvas.width = container.clientWidth * 2;
+            els.canvas.height = container.clientHeight * 2;
+            els.canvas.style.width = container.clientWidth + 'px';
+            els.canvas.style.height = container.clientHeight + 'px';
+            ctx.scale(2, 2);
+        }
+
+        // --- DATA LOGIC ---
+        function generateData() {
+            state.points = [];
+            const n = 60;
+            for (let i = 0; i < n; i++) {
+                // X: Study hours (0 to 10) 
+                const xRaw = Math.random() * 10; 
+                
+                // W: Anxiety (-3 to +3 SD scale)
+                const w = (Math.random() - 0.5) * 6; 
+                
+                state.points.push({ x: xRaw, w: w, y: 0 });
+            }
+            recalcY();
+        }
+
+        function recalcY() {
+            state.points.forEach(p => {
+                // Y = b1*X + b2*W + b3*X*W + c + e
+                const noise = (Math.random() - 0.5) * state.noiseLevel * 4;
+                p.y = state.b1 * p.x + state.b2 * p.w + state.b3 * (p.x * p.w) + state.c + noise;
+            });
+        }
+
+        function updateSimpleSlopes() {
+            // Simple Slope = b1 + b3 * W
+            const wLow = -2;
+            const wHigh = 2;
+
+            const mLow = state.b1 + state.b3 * wLow;
+            const mMed = state.b1 + state.b3 * 0;
+            const mHigh = state.b1 + state.b3 * wHigh;
+
+            els.outSlopeLow.innerText = mLow.toFixed(2);
+            els.outSlopeMed.innerText = mMed.toFixed(2);
+            els.outSlopeHigh.innerText = mHigh.toFixed(2);
+        }
+
+        // --- DRAWING ---
+        function draw() {
+            const width = els.canvas.width / 2;
+            const height = els.canvas.height / 2;
+            ctx.clearRect(0, 0, width, height);
+
+            // Coordinate System
+            // X: 0 to 10
+            // Y: Auto-scale
+            const padding = 50;
+            const drawW = width - padding * 2;
+            const drawH = height - padding * 2;
+
+            // Find Y range
+            let minY = 0, maxY = 10;
+            state.points.forEach(p => {
+                if(p.y < minY) minY = p.y;
+                if(p.y > maxY) maxY = p.y;
+            });
+            // Add buffer
+            minY -= 2; maxY += 2;
+            const rangeY = maxY - minY;
+
+            const mapX = (x) => padding + (x / 10) * drawW;
+            const mapY = (y) => height - padding - ((y - minY) / rangeY) * drawH;
+
+            // 1. Grid
+            ctx.strokeStyle = "#f1f5f9";
+            ctx.lineWidth = 1;
+            for(let i=0; i<=10; i+=1) {
+                ctx.beginPath(); ctx.moveTo(mapX(i), padding); ctx.lineTo(mapX(i), height - padding); ctx.stroke();
+            }
+            for(let i=0; i<=5; i++) {
+                const yVal = minY + (i/5)*rangeY;
+                ctx.beginPath(); ctx.moveTo(padding, mapY(yVal)); ctx.lineTo(width - padding, mapY(yVal)); ctx.stroke();
+            }
+
+            // 2. Axes
+            ctx.strokeStyle = "#cbd5e1";
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            ctx.moveTo(padding, padding); ctx.lineTo(padding, height - padding); ctx.lineTo(width - padding, height - padding);
+            ctx.stroke();
+
+            // 3. Draw Points (Color coded by W)
+            state.points.forEach(p => {
+                ctx.beginPath();
+                ctx.arc(mapX(p.x), mapY(p.y), 5, 0, Math.PI * 2);
+                
+                // Color Logic
+                if (p.w < -1) ctx.fillStyle = "#3b82f6"; // Blue (Low Anxiety)
+                else if (p.w > 1) ctx.fillStyle = "#ef4444"; // Red (High Anxiety)
+                else ctx.fillStyle = "#64748b"; // Slate (Med)
+                
+                ctx.fill();
+            });
+
+            // 4. Draw 3 Regression Lines (Simple Slopes)
+            // Function to draw line for a given W
+            const drawLine = (w, color) => {
+                ctx.beginPath();
+                // Calc Y for X=0 and X=10
+                // Y = (b1 + b3*W)*X + (b2*W + c)
+                const slope = state.b1 + state.b3 * w;
+                const int = state.c + state.b2 * w;
+
+                const yStart = slope * 0 + int;
+                const yEnd = slope * 10 + int;
+
+                ctx.moveTo(mapX(0), mapY(yStart));
+                ctx.lineTo(mapX(10), mapY(yEnd));
+                ctx.strokeStyle = color;
+                ctx.lineWidth = 3;
+                ctx.stroke();
+            };
+
+            drawLine(-2, "#3b82f6"); // Low W 
+            drawLine(0, "#64748b");  // Mean W
+            drawLine(2, "#ef4444");  // High W 
+            
+            // Labels
+            ctx.fillStyle = "#64748b";
+            ctx.font = "10px Inter";
+            ctx.fillText("0", padding - 15, height - padding + 15);
+            ctx.fillText("Thời gian ôn tập (X)", width - padding - 60, height - padding + 30);
+        }
+
+        // --- TABS ---
+        window.switchTab = function(tabId) {
+            document.querySelectorAll('.nav-btn').forEach(btn => {
+                if (btn.dataset.target === tabId) {
+                    btn.classList.add('bg-slate-100', 'text-slate-900', 'shadow-sm', 'border-slate-300');
+                    btn.classList.remove('text-slate-600', 'hover:bg-white', 'hover:text-slate-900');
+                } else {
+                    btn.classList.remove('bg-slate-100', 'text-slate-900', 'shadow-sm', 'border-slate-300');
+                    btn.classList.add('text-slate-600', 'hover:bg-white', 'hover:text-slate-900');
+                }
+            });
+            document.querySelectorAll('.tab-content').forEach(content => {
+                content.classList.toggle('hidden', content.id !== tabId);
+            });
+            if (tabId === 'lab') {
+                setTimeout(() => { resizeCanvas(); draw(); }, 50);
+            }
+        }
+
+        init();
+    </script>
+</body>
+</html>
