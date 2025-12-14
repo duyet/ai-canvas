@@ -1,0 +1,506 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Giải Mã Tâm Lý Tội Phạm: Hồ Sơ Chuyên Sâu</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Merriweather:ital,wght@0,300;0,400;0,700;1,300&family=Oswald:wght@300;500;700&family=JetBrains+Mono:wght@400&display=swap" rel="stylesheet">
+
+    <style>
+        :root {
+            --bg-dark: #0f172a;
+            --text-main: #cbd5e1;
+            --accent-red: #ef4444;
+            --accent-blue: #38bdf8;
+            --accent-gold: #fbbf24;
+        }
+        body {
+            font-family: 'Merriweather', serif; /* Serif cho văn bản dài dễ đọc */
+            background-color: var(--bg-dark);
+            color: var(--text-main);
+            line-height: 2;
+        }
+        h1, h2, h3, h4, .headline {
+            font-family: 'Oswald', sans-serif; /* Sans-serif mạnh mẽ cho tiêu đề */
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+        .code-font {
+            font-family: 'JetBrains Mono', monospace;
+        }
+        .drop-cap::first-letter {
+            font-family: 'Oswald', sans-serif;
+            font-size: 4rem;
+            line-height: 0.8;
+            float: left;
+            margin-right: 0.5rem;
+            color: var(--accent-blue);
+            font-weight: 700;
+        }
+        .chart-container {
+            position: relative;
+            width: 100%;
+            height: 400px;
+            margin: 2rem 0;
+        }
+        .quote-box {
+            border-left: 4px solid var(--accent-red);
+            background: rgba(239, 68, 68, 0.05);
+            padding: 1.5rem;
+            font-style: italic;
+            margin: 2rem 0;
+        }
+        /* Sticky Navigation for Long-form */
+        .sticky-nav a {
+            transition: all 0.3s ease;
+        }
+        .sticky-nav a:hover, .sticky-nav a.active {
+            color: var(--accent-blue);
+            border-left-color: var(--accent-blue);
+        }
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: #020617; }
+        ::-webkit-scrollbar-thumb { background: #334155; border-radius: 4px; }
+    </style>
+</head>
+<body class="antialiased selection:bg-red-900 selection:text-red-50">
+
+    <!-- Progress Bar -->
+    <div class="fixed top-0 left-0 h-1 bg-gradient-to-r from-blue-500 via-purple-500 to-red-500 z-50 w-full" id="progressBar" style="transform: scaleX(0); transform-origin: 0 50%;"></div>
+
+    <!-- Navigation Sidebar (Desktop) -->
+    <nav class="hidden xl:block fixed left-8 top-1/2 -translate-y-1/2 w-48 space-y-4 border-l border-slate-800 pl-4 sticky-nav z-40">
+        <a href="#intro" class="block text-xs text-slate-500 hover:text-sky-400 border-l-2 border-transparent pl-2">Mở đầu</a>
+        <a href="#dark-triad" class="block text-xs text-slate-500 hover:text-sky-400 border-l-2 border-transparent pl-2">01. Tam Giác Đen</a>
+        <a href="#geo-profile" class="block text-xs text-slate-500 hover:text-sky-400 border-l-2 border-transparent pl-2">02. Bản Đồ Tội Ác</a>
+        <a href="#modus-operandi" class="block text-xs text-slate-500 hover:text-sky-400 border-l-2 border-transparent pl-2">03. MO vs Signature</a>
+        <a href="#victimology" class="block text-xs text-slate-500 hover:text-sky-400 border-l-2 border-transparent pl-2">04. Nạn Nhân Học</a>
+    </nav>
+
+    <!-- Header -->
+    <header id="intro" class="relative min-h-screen flex flex-col justify-center items-center text-center px-4 overflow-hidden border-b border-slate-800">
+        <div class="absolute inset-0 bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-slate-800/40 via-slate-950 to-slate-950 z-0"></div>
+        
+        <div class="relative z-10 max-w-4xl mx-auto space-y-6 animate-fade-in-up">
+            <span class="code-font text-red-500 text-sm tracking-[0.3em] uppercase block mb-4">Mật Mã Tội Phạm • Vol. 01</span>
+            <h1 class="text-5xl md:text-8xl font-bold text-slate-100 leading-tight">
+                Bên Trong <br/>
+                <span class="text-transparent bg-clip-text bg-gradient-to-r from-sky-400 to-red-500">Tâm Trí Kẻ Ác</span>
+            </h1>
+            <p class="text-xl md:text-2xl text-slate-400 font-light italic max-w-2xl mx-auto mt-8">
+                "Cái ác không phải là một hiện tượng siêu nhiên. Nó là một sự lựa chọn của con người, được nuôi dưỡng bởi hoàn cảnh và tâm lý."
+            </p>
+            <div class="pt-12 flex justify-center gap-8 text-xs text-slate-500 code-font">
+                <div>THỜI GIAN ĐỌC: 15 PHÚT</div>
+                <div>NGUỒN: FBI BSU & RESEARCH</div>
+            </div>
+        </div>
+        
+        <div class="absolute bottom-10 left-1/2 -translate-x-1/2 animate-bounce">
+            <svg class="w-6 h-6 text-slate-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 14l-7 7m0 0l-7-7m7 7V3"></path></svg>
+        </div>
+    </header>
+
+    <main class="max-w-3xl mx-auto px-6 py-24 space-y-32">
+
+        <!-- SECTION 1: THE DARK TRIAD -->
+        <article id="dark-triad" class="scroll-mt-24">
+            <div class="flex items-center gap-4 mb-8">
+                <span class="text-6xl font-bold text-slate-800 select-none">01</span>
+                <h2 class="text-3xl md:text-4xl font-bold text-slate-100">Tam Giác Đen (The Dark Triad)</h2>
+            </div>
+            
+            <p class="drop-cap text-lg text-slate-300 mb-8">
+                Trong tâm lý học tội phạm, "Tam Giác Đen" là thuật ngữ chỉ ba đặc điểm nhân cách nguy hiểm nhất khi kết hợp với nhau. Khác với những kẻ sát nhân bốc đồng, những kẻ sở hữu bộ ba này thường gây án một cách lạnh lùng, có tính toán và không hề hối hận.
+            </p>
+
+            <div class="bg-slate-900 border border-slate-800 p-8 rounded-xl shadow-2xl my-12">
+                <h3 class="text-center text-xl text-sky-400 mb-6">So Sánh Nhân Cách: Người Thường vs. Tội Phạm Nguy Hiểm</h3>
+                <div class="chart-container">
+                    <canvas id="darkTriadChart"></canvas>
+                </div>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mt-8 text-sm">
+                    <div class="text-center">
+                        <strong class="block text-red-400 text-lg mb-2">Ái Kỷ (Narcissism)</strong>
+                        <p class="text-slate-500">Tự cao tự đại, khao khát được ngưỡng mộ, thiếu sự đồng cảm. "Ta là trung tâm vũ trụ."</p>
+                    </div>
+                    <div class="text-center">
+                        <strong class="block text-blue-400 text-lg mb-2">Machiavellianism</strong>
+                        <p class="text-slate-500">Thao túng, lừa lọc, coi người khác là công cụ để đạt mục đích. "Kết quả biện minh cho phương tiện."</p>
+                    </div>
+                    <div class="text-center">
+                        <strong class="block text-yellow-400 text-lg mb-2">Tâm Thần (Psychopathy)</strong>
+                        <p class="text-slate-500">Vô cảm, bốc đồng, không biết sợ hãi hay hối lỗi. "Cảm xúc là điểm yếu."</p>
+                    </div>
+                </div>
+            </div>
+
+            <p class="text-slate-300">
+                Sự nguy hiểm thực sự nằm ở sự giao thoa. Một kẻ Ái kỷ có thể chỉ gây khó chịu nơi công sở, nhưng nếu kết hợp với Tâm thần (vô cảm), hắn sẵn sàng loại bỏ bất kỳ ai cản đường danh vọng của mình mà không chút do dự.
+            </p>
+        </article>
+
+        <!-- SECTION 2: GEOGRAPHIC PROFILING -->
+        <article id="geo-profile" class="scroll-mt-24">
+            <div class="flex items-center gap-4 mb-8">
+                <span class="text-6xl font-bold text-slate-800 select-none">02</span>
+                <h2 class="text-3xl md:text-4xl font-bold text-slate-100">Bản Đồ Tội Ác & Lý Thuyết Vùng Đệm</h2>
+            </div>
+
+            <div class="quote-box text-xl text-slate-200">
+                "Tội phạm không hành động ngẫu nhiên. Chúng đi săn ở những nơi chúng cảm thấy thoải mái."
+            </div>
+
+            <p class="text-lg text-slate-300 mb-6">
+                David Canter và Kim Rossmo đã phát triển lý thuyết về <strong>Hồ sơ Địa lý</strong>. Họ chia tội phạm thành hai loại chính dựa trên cách di chuyển:
+            </p>
+
+            <ul class="space-y-4 mb-8 list-none pl-0">
+                <li class="flex gap-4">
+                    <span class="text-2xl">🕷️</span>
+                    <div>
+                        <strong class="text-sky-400 uppercase tracking-wider">Kẻ Săn Mồi (The Marauder)</strong>
+                        <p class="text-slate-400 text-sm mt-1">Gây án xung quanh nơi ở của mình. Chúng dùng nhà làm trung tâm và tỏa ra xung quanh. Thường có một "Vùng Đệm" (Buffer Zone) ngay sát nhà nơi chúng không gây án để tránh bị phát hiện.</p>
+                    </div>
+                </li>
+                <li class="flex gap-4">
+                    <span class="text-2xl">🚌</span>
+                    <div>
+                        <strong class="text-red-400 uppercase tracking-wider">Kẻ Đi Lại (The Commuter)</strong>
+                        <p class="text-slate-400 text-sm mt-1">Di chuyển đến một khu vực hoàn toàn xa lạ để gây án. Khó bắt hơn vì không có mối liên hệ địa lý rõ ràng với hiện trường.</p>
+                    </div>
+                </li>
+            </ul>
+
+            <div class="bg-slate-900 border border-slate-800 p-6 rounded-xl shadow-2xl my-10">
+                <h3 class="text-center text-xl text-white mb-2">Mô Phỏng Mô Hình "Kẻ Săn Mồi" (Marauder)</h3>
+                <p class="text-center text-xs text-slate-500 mb-6 font-mono">Trục X/Y: Khoảng cách từ nhà (km)</p>
+                <div class="chart-container">
+                    <canvas id="geoProfileChart"></canvas>
+                </div>
+                <p class="text-xs text-slate-500 italic mt-4 text-center">
+                    *Lưu ý khoảng trống ở giữa (0,0). Đó là "Vùng Đệm" an toàn mà tội phạm tránh gây án để không làm lộ nơi ẩn náu.
+                </p>
+            </div>
+        </article>
+
+        <!-- SECTION 3: MO VS SIGNATURE -->
+        <article id="modus-operandi" class="scroll-mt-24 border-t border-slate-800 pt-16">
+            <div class="flex items-center gap-4 mb-8">
+                <span class="text-6xl font-bold text-slate-800 select-none">03</span>
+                <h2 class="text-3xl md:text-4xl font-bold text-slate-100">Thủ Đoạn (MO) vs. Chữ Ký (Signature)</h2>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-12">
+                <div class="prose prose-invert">
+                    <h3 class="text-sky-400">Modus Operandi (MO)</h3>
+                    <p class="text-slate-400">
+                        MO là <strong>cách thức</strong> tội phạm thực hiện hành vi. Nó mang tính chất kỹ thuật và tiến hóa theo kinh nghiệm. MO thay đổi để trở nên hiệu quả hơn.
+                    </p>
+                    <ul class="text-slate-400 text-sm space-y-2 mt-4">
+                        <li>• Dùng súng hay dao?</li>
+                        <li>• Đột nhập ban ngày hay ban đêm?</li>
+                        <li>• Trói nạn nhân bằng gì?</li>
+                        <li>• <em>Mục đích: Hoàn thành tội ác & Trốn thoát.</em></li>
+                    </ul>
+                </div>
+                
+                <div class="prose prose-invert">
+                    <h3 class="text-red-400">Chữ Ký (Signature)</h3>
+                    <p class="text-slate-400">
+                        Chữ ký là <strong>lý do</strong> tâm lý sâu xa. Nó không cần thiết cho việc gây án, nhưng cần thiết để thỏa mãn nhu cầu bệnh hoạn (fantasy) của hung thủ. Nó bất biến.
+                    </p>
+                    <ul class="text-slate-400 text-sm space-y-2 mt-4">
+                        <li>• Bắt nạn nhân nói những câu thoại cụ thể.</li>
+                        <li>• Sắp đặt tư thế tử thi.</li>
+                        <li>• Lấy đi một vật kỷ niệm (trophy).</li>
+                        <li>• <em>Mục đích: Thỏa mãn tâm lý.</em></li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="mt-12 bg-gradient-to-r from-slate-900 to-slate-800 p-8 rounded-lg border-l-4 border-yellow-500">
+                <h4 class="text-yellow-500 font-bold mb-2">Ví dụ Điển hình: Vụ Án Giả Định "The Sculptor"</h4>
+                <p class="text-slate-300 text-sm italic">
+                    "Hắn đột nhập vào nhà, trói nạn nhân bằng dây thừng hắn mang theo (MO - chuẩn bị kỹ). Sau khi sát hại, hắn luôn đặt một bông hoa hồng trắng lên ngực nạn nhân và xoay mặt họ về phía cửa sổ (Signature - nhu cầu thẩm mỹ lệch lạc, không giúp ích gì cho việc giết người)."
+                </p>
+            </div>
+        </article>
+
+        <!-- SECTION 4: VICTIMOLOGY -->
+        <article id="victimology" class="scroll-mt-24 border-t border-slate-800 pt-16">
+            <div class="flex items-center gap-4 mb-8">
+                <span class="text-6xl font-bold text-slate-800 select-none">04</span>
+                <h2 class="text-3xl md:text-4xl font-bold text-slate-100">Nạn Nhân Học (Victimology)</h2>
+            </div>
+
+            <p class="text-lg text-slate-300 mb-8">
+                Để bắt kẻ săn mồi, FBI phải hiểu con mồi. Tại sao lại là người này mà không phải người khác? Phân tích mức độ rủi ro của nạn nhân giúp thu hẹp nghi phạm.
+            </p>
+
+            <div class="bg-slate-900 p-8 rounded-xl shadow-lg">
+                <div class="chart-container" style="height: 350px;">
+                    <canvas id="victimRiskChart"></canvas>
+                </div>
+                <div class="flex justify-between text-xs text-slate-500 mt-4 px-4 font-mono">
+                    <span>AN TOÀN</span>
+                    <span>NGUY HIỂM</span>
+                </div>
+            </div>
+
+            <div class="mt-8 grid grid-cols-1 md:grid-cols-2 gap-8">
+                <div>
+                    <h4 class="text-green-400 font-bold mb-2">Nạn Nhân Rủi Ro Thấp</h4>
+                    <p class="text-slate-400 text-sm">
+                        Sống lành mạnh, công việc ổn định, an ninh tốt, ít đi đêm một mình. <br/>
+                        <span class="text-slate-200 italic">=> Nếu họ bị hại, hung thủ thường là người quen biết (Targeted).</span>
+                    </p>
+                </div>
+                <div>
+                    <h4 class="text-red-400 font-bold mb-2">Nạn Nhân Rủi Ro Cao</h4>
+                    <p class="text-slate-400 text-sm">
+                        Làm nghề mại dâm, nghiện ngập, vô gia cư, thường xuyên đi nhờ xe.<br/>
+                        <span class="text-slate-200 italic">=> Họ thường là mục tiêu của kẻ giết người hàng loạt (Opportunistic).</span>
+                    </p>
+                </div>
+            </div>
+        </article>
+
+        <!-- Conclusion -->
+        <footer class="mt-32 border-t border-slate-800 pt-16 pb-24 text-center">
+            <h3 class="text-2xl font-bold text-slate-200 mb-6 font-serif">"Không có tội ác nào hoàn hảo. Chỉ có bằng chứng bị bỏ sót."</h3>
+            <p class="text-slate-500 text-sm max-w-xl mx-auto">
+                Tài liệu này tổng hợp kiến thức từ khoa học hành vi hiện đại. Nó phục vụ mục đích giáo dục và nghiên cứu. <br/>
+                Thiết kế & Biên tập dữ liệu bởi AI Assistant.
+            </p>
+            <div class="mt-12">
+                <button onclick="window.scrollTo({top: 0, behavior: 'smooth'})" class="px-6 py-3 border border-slate-700 text-slate-400 hover:text-white hover:border-white transition-all text-xs tracking-widest uppercase">
+                    Quay Về Đầu Trang
+                </button>
+            </div>
+        </footer>
+
+    </main>
+
+    <script>
+        // --- Scroll Progress Bar Logic ---
+        window.onscroll = function() {
+            let winScroll = document.body.scrollTop || document.documentElement.scrollTop;
+            let height = document.documentElement.scrollHeight - document.documentElement.clientHeight;
+            let scrolled = (winScroll / height);
+            document.getElementById("progressBar").style.transform = "scaleX(" + scrolled + ")";
+        };
+
+        // --- Common Chart Config ---
+        Chart.defaults.color = '#94a3b8';
+        Chart.defaults.font.family = "'JetBrains Mono', monospace";
+        Chart.defaults.font.size = 11;
+
+        // --- CHART 1: DARK TRIAD (Radar Chart) ---
+        const ctxDark = document.getElementById('darkTriadChart').getContext('2d');
+        new Chart(ctxDark, {
+            type: 'radar',
+            data: {
+                labels: ['Ái Kỷ (Narcissism)', 'Thao Túng (Machiavellianism)', 'Vô Cảm (Psychopathy)', 'Bốc Đồng', 'Tàn Nhẫn', 'Dối Trá'],
+                datasets: [{
+                    label: 'Người Bình Thường',
+                    data: [3, 4, 1, 3, 1, 2], // Baseline scores
+                    backgroundColor: 'rgba(56, 189, 248, 0.1)',
+                    borderColor: '#38bdf8', // Sky Blue
+                    pointBackgroundColor: '#38bdf8',
+                    borderWidth: 2
+                }, {
+                    label: 'Tội Phạm Nguy Hiểm',
+                    data: [9, 8, 10, 8, 9, 9], // High scores
+                    backgroundColor: 'rgba(239, 68, 68, 0.2)',
+                    borderColor: '#ef4444', // Red
+                    pointBackgroundColor: '#ef4444',
+                    borderWidth: 2
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    r: {
+                        angleLines: { color: '#334155' },
+                        grid: { color: '#1e293b' },
+                        pointLabels: {
+                            font: { size: 12, family: 'Oswald' },
+                            color: '#e2e8f0'
+                        },
+                        ticks: { display: false, backdropColor: 'transparent' },
+                        suggestedMin: 0,
+                        suggestedMax: 10
+                    }
+                },
+                plugins: {
+                    legend: { position: 'bottom', labels: { padding: 20 } },
+                    tooltip: {
+                        backgroundColor: '#0f172a',
+                        titleColor: '#fff',
+                        bodyColor: '#cbd5e1',
+                        borderColor: '#334155',
+                        borderWidth: 1
+                    }
+                }
+            }
+        });
+
+        // --- CHART 2: GEOGRAPHIC PROFILING (Scatter Chart) ---
+        // Simulating crime scenes around a central point (0,0 - Home)
+        const ctxGeo = document.getElementById('geoProfileChart').getContext('2d');
+        
+        // Generate Marauder Data (Cluster near home but with a buffer zone)
+        const marauderData = [
+            {x: 2.5, y: 3.0}, {x: -3.2, y: 1.5}, {x: 4.1, y: -2.0}, 
+            {x: -2.8, y: -3.5}, {x: 3.5, y: 4.2}, {x: 5.0, y: 0.5},
+            {x: -4.5, y: -1.2}, {x: 0.5, y: 5.5} // No points in the inner 0-2 range (Buffer Zone)
+        ];
+
+        new Chart(ctxGeo, {
+            type: 'scatter',
+            data: {
+                datasets: [
+                    {
+                        label: 'Hiện Trường Vụ Án (Crime Scenes)',
+                        data: marauderData,
+                        backgroundColor: '#ef4444',
+                        pointRadius: 6,
+                        pointHoverRadius: 8
+                    },
+                    {
+                        label: 'Nhà / Căn Cứ (Home Base)',
+                        data: [{x: 0, y: 0}],
+                        backgroundColor: '#38bdf8',
+                        pointRadius: 10,
+                        pointStyle: 'rectRot', // Diamond shape
+                    },
+                    {
+                        label: 'Vùng Đệm An Toàn (Buffer Zone)',
+                        data: [{x: 0, y: 0}], // Dummy point for legend
+                        backgroundColor: 'rgba(56, 189, 248, 0.1)',
+                        borderColor: '#38bdf8',
+                        borderWidth: 1,
+                        pointRadius: 0 // Hide point
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    x: {
+                        type: 'linear',
+                        position: 'bottom',
+                        min: -6, max: 6,
+                        grid: { color: '#1e293b' },
+                        title: { display: true, text: 'Khoảng cách Đông - Tây (km)', color: '#64748b' }
+                    },
+                    y: {
+                        min: -6, max: 6,
+                        grid: { color: '#1e293b' },
+                        title: { display: true, text: 'Khoảng cách Bắc - Nam (km)', color: '#64748b' }
+                    }
+                },
+                plugins: {
+                    annotation: {
+                        // Note: Chart.js annotation plugin is not loaded via CDN here to keep it simple, 
+                        // so we simulate the buffer zone visually with a background image or just explained in text.
+                        // However, we can use 'beforeDraw' hook to draw circles if needed, but text explanation is safer for compatibility.
+                    },
+                    legend: { position: 'bottom' },
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                if(context.dataset.label === 'Nhà / Căn Cứ') return 'Nơi ở của tội phạm';
+                                return `Vụ án cách nhà: ${Math.sqrt(context.raw.x**2 + context.raw.y**2).toFixed(1)} km`;
+                            }
+                        }
+                    }
+                }
+            },
+            plugins: [{
+                id: 'customCircle',
+                beforeDraw: (chart) => {
+                    const ctx = chart.ctx;
+                    const xAxis = chart.scales.x;
+                    const yAxis = chart.scales.y;
+                    const x = xAxis.getPixelForValue(0);
+                    const y = yAxis.getPixelForValue(0);
+                    
+                    // Draw Buffer Zone Circle (Radius ~ 2 units)
+                    const radius = Math.abs(xAxis.getPixelForValue(2) - x);
+                    
+                    ctx.save();
+                    ctx.beginPath();
+                    ctx.arc(x, y, radius, 0, 2 * Math.PI);
+                    ctx.fillStyle = 'rgba(56, 189, 248, 0.1)';
+                    ctx.fill();
+                    ctx.strokeStyle = '#38bdf8';
+                    ctx.setLineDash([5, 5]);
+                    ctx.stroke();
+                    ctx.restore();
+                }
+            }]
+        });
+
+        // --- CHART 3: VICTIM RISK (Horizontal Bar) ---
+        const ctxVictim = document.getElementById('victimRiskChart').getContext('2d');
+        new Chart(ctxVictim, {
+            type: 'bar',
+            data: {
+                labels: ['Người Già Neo Đơn', 'Trẻ Em (Không Giám Sát)', 'Người Bán Dâm', 'Người Đi Nhờ Xe (Hitchhiker)', 'Sinh Viên Đi Làm Đêm', 'Nhân Viên Văn Phòng (Ban Ngày)'],
+                datasets: [{
+                    label: 'Chỉ Số Dễ Bị Tổn Thương (Vulnerability Index)',
+                    data: [80, 85, 95, 90, 60, 20],
+                    backgroundColor: [
+                        '#fbbf24', // Gold
+                        '#fbbf24',
+                        '#ef4444', // Red (High Risk)
+                        '#ef4444',
+                        '#fbbf24',
+                        '#38bdf8'  // Blue (Low Risk)
+                    ],
+                    borderRadius: 4
+                }]
+            },
+            options: {
+                indexAxis: 'y',
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    x: {
+                        grid: { color: '#1e293b' },
+                        max: 100
+                    },
+                    y: {
+                        grid: { display: false },
+                        ticks: { color: '#cbd5e1', font: { family: 'Oswald' } }
+                    }
+                },
+                plugins: {
+                    legend: { display: false },
+                    tooltip: {
+                        backgroundColor: '#0f172a',
+                        borderColor: '#334155',
+                        borderWidth: 1,
+                        callbacks: {
+                            label: function(context) {
+                                return ` Nguy cơ: ${context.raw}/100`;
+                            }
+                        }
+                    }
+                }
+            }
+        });
+    </script>
+</body>
+</html>
