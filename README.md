@@ -11,7 +11,8 @@ A collection of AI-generated static HTML pages served via GitHub Pages.
 |------|------|
 | [criminal-psychology-v2.html](./criminal-psychology-v2.html) | [View](https://duyet.github.io/ai-canvas/criminal-psychology-v2.html) |
 | [criminal-psychology.html](./criminal-psychology.html) | [View](https://duyet.github.io/ai-canvas/criminal-psychology.html) |
-| [t-test.html](./t-test.html) | [View](https://duyet.github.io/ai-canvas/t-test.html) |<!-- PAGES_END -->
+| [p-value.html](./p-value.html) | [View](https://duyet.github.io/ai-canvas/p-value.html) |
+| [t-test.html](./t-test.html) | [View](https://duyet.github.io/ai-canvas/t-test.html) || [t-test.html](./t-test.html) | [View](https://duyet.github.io/ai-canvas/t-test.html) |<!-- PAGES_END -->
 
 ---
 
