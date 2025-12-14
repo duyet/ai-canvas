@@ -1,0 +1,92 @@
+name: Update README with HTML Pages
+
+on:
+  push:
+    branches:
+      - main
+      - master
+    paths:
+      - '**.html'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  update-readme:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Generate HTML pages list
+        run: |
+          # Find all HTML files and sort them
+          HTML_FILES=$(find . -maxdepth 1 -name "*.html" -type f | sed 's|^\./||' | sort)
+
+          # Generate the markdown table
+          TABLE="| Page | Link |\n|------|------|\n"
+
+          for file in $HTML_FILES; do
+            filename=$(basename "$file")
+            TABLE="${TABLE}| [${filename}](./${filename}) | [View](https://duyet.github.io/ai-canvas/${filename}) |\n"
+          done
+
+          # Save to temp file
+          echo -e "$TABLE" > /tmp/pages_table.md
+
+      - name: Update README.md
+        run: |
+          # Read the generated table
+          NEW_TABLE=$(cat /tmp/pages_table.md)
+
+          # Check if README.md exists
+          if [ ! -f README.md ]; then
+            # Create new README.md if it doesn't exist
+            cat > README.md << 'READMEEOF'
+          # AI Canvas
+
+          A collection of AI-generated static HTML pages served via GitHub Pages.
+
+          **Live Site:** https://duyet.github.io/ai-canvas/
+
+          ## Pages
+
+          <!-- PAGES_START -->
+          <!-- PAGES_END -->
+
+          ---
+
+          *This README is automatically updated by GitHub Actions when new HTML files are added.*
+          READMEEOF
+          fi
+
+          # Use awk to replace content between markers
+          awk -v table="$NEW_TABLE" '
+          /<!-- PAGES_START -->/ {
+            print
+            printf "%s", table
+            skip = 1
+            next
+          }
+          /<!-- PAGES_END -->/ {
+            skip = 0
+          }
+          !skip {
+            print
+          }
+          ' README.md > README.tmp && mv README.tmp README.md
+
+      - name: Check for changes
+        id: git-check
+        run: |
+          git diff --exit-code README.md || echo "changed=true" >> $GITHUB_OUTPUT
+
+      - name: Commit and push changes
+        if: steps.git-check.outputs.changed == 'true'
+        run: |
+          git config --local user.email "duyetbot@users.noreply.github.com"
+          git config --local user.name "duyetbot"
+          git add README.md
+          git commit -m "docs: auto-update README with HTML pages listing [skip ci]"
+          git push
