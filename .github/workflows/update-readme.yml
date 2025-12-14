@@ -65,7 +65,10 @@ jobs:
           awk -v table="$NEW_TABLE" '
           /<!-- PAGES_START -->/ {
             print
+            print
             printf "%s", table
+            print
+            print
             skip = 1
             next
           }
