@@ -1,0 +1,669 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Regression Explorer: Linear Regression (Tâm lý học)</title>
+    
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Icons (Phosphor Icons) -->
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                        mono: ['JetBrains Mono', 'monospace'],
+                    },
+                    colors: {
+                        brand: {
+                            50: '#fdf4ff',
+                            100: '#fae8ff',
+                            500: '#d946ef', // Fuchsia/Pink theme for Psychology/Social Science vibe
+                            600: '#c026d3',
+                            700: '#a21caf',
+                            900: '#701a75',
+                        }
+                    },
+                    animation: {
+                        'fade-in': 'fadeIn 0.5s ease-out',
+                        'slide-up': 'slideUp 0.5s ease-out',
+                    },
+                    keyframes: {
+                        fadeIn: {
+                            '0%': { opacity: '0' },
+                            '100%': { opacity: '1' },
+                        },
+                        slideUp: {
+                            '0%': { transform: 'translateY(20px)', opacity: '0' },
+                            '100%': { transform: 'translateY(0)', opacity: '1' },
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: #f1f5f9; }
+        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+
+        input[type=range] { -webkit-appearance: none; background: transparent; }
+        input[type=range]::-webkit-slider-thumb {
+            -webkit-appearance: none; height: 20px; width: 20px; border-radius: 50%;
+            background: #ffffff; border: 2px solid #c026d3; cursor: pointer;
+            margin-top: -8px; box-shadow: 0 2px 6px rgba(0,0,0,0.1); transition: transform 0.1s;
+        }
+        input[type=range]::-webkit-slider-thumb:hover { transform: scale(1.1); }
+        input[type=range]::-webkit-slider-runnable-track {
+            width: 100%; height: 6px; cursor: pointer; background: #e2e8f0; border-radius: 4px;
+        }
+        
+        .glass-panel {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.5);
+            box-shadow: 0 10px 30px -5px rgba(0, 0, 0, 0.05);
+        }
+        .canvas-container { position: relative; width: 100%; height: 400px; }
+    </style>
+</head>
+<body class="bg-slate-50 text-slate-800 antialiased min-h-screen flex flex-col">
+
+    <!-- Header -->
+    <header class="sticky top-0 z-50 bg-white/80 backdrop-blur-md border-b border-slate-200">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+            <div class="flex items-center gap-3">
+                <div class="w-10 h-10 bg-brand-600 rounded-xl flex items-center justify-center text-white shadow-lg shadow-brand-500/30">
+                    <i class="ph-bold ph-trend-up text-2xl"></i>
+                </div>
+                <div>
+                    <h1 class="font-bold text-xl tracking-tight text-slate-900">Regression <span class="text-brand-600">Explorer</span></h1>
+                    <p class="text-xs text-slate-500 font-medium">Dành cho Sinh viên Tâm lý & Xã hội học</p>
+                </div>
+            </div>
+
+            <!-- Nav -->
+            <nav class="hidden md:flex gap-1 bg-slate-100 p-1 rounded-lg">
+                <button onclick="switchTab('concept')" class="nav-btn active px-4 py-2 text-sm font-medium rounded-md transition-all duration-200 text-slate-600 hover:text-slate-900" data-target="concept">
+                    <i class="ph ph-lightbulb mr-1.5"></i> Lý thuyết
+                </button>
+                <button onclick="switchTab('lab')" class="nav-btn px-4 py-2 text-sm font-medium rounded-md transition-all duration-200 text-slate-600 hover:text-slate-900" data-target="lab">
+                    <i class="ph ph-sliders-horizontal mr-1.5"></i> Mô phỏng
+                </button>
+                <button onclick="switchTab('glossary')" class="nav-btn px-4 py-2 text-sm font-medium rounded-md transition-all duration-200 text-slate-600 hover:text-slate-900" data-target="glossary">
+                    <i class="ph ph-book-bookmark mr-1.5"></i> Thuật ngữ
+                </button>
+            </nav>
+            
+             <button class="md:hidden p-2 text-slate-600" onclick="alert('Vui lòng sử dụng màn hình lớn hơn để có trải nghiệm tốt nhất!')">
+                <i class="ph ph-list text-2xl"></i>
+            </button>
+        </div>
+    </header>
+
+    <main class="flex-grow container mx-auto px-4 py-8 max-w-7xl">
+        
+        <!-- SECTION 1: CONCEPT -->
+        <section id="concept" class="tab-content block animate-fade-in">
+            <div class="max-w-4xl mx-auto text-center mb-12">
+                <h2 class="text-3xl md:text-4xl font-bold text-slate-900 mb-6 leading-tight">
+                    Dự đoán hành vi con người <br> <span class="text-transparent bg-clip-text bg-gradient-to-r from-brand-600 to-purple-500">bằng mô hình toán học</span>
+                </h2>
+                <p class="text-base text-slate-600 leading-relaxed max-w-3xl mx-auto">
+                    Trong tâm lý học, chúng ta không dùng hồi quy để tính toán máy móc, mà để hiểu <strong>mối quan hệ</strong> giữa các yếu tố.
+                    <br>
+                    Ví dụ: "Thời gian ôn thi" ảnh hưởng thế nào đến "Điểm số"? Liệu học nhiều hơn có chắc chắn điểm cao hơn?
+                </p>
+            </div>
+
+            <div class="grid md:grid-cols-2 gap-8 items-center py-8">
+                <!-- Visual Formula -->
+                <div class="flex flex-col items-center justify-center gap-6 select-none bg-white p-8 rounded-2xl border border-slate-200 shadow-sm relative overflow-hidden">
+                    <div class="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-brand-400 to-purple-500"></div>
+                    
+                    <div class="font-serif text-3xl md:text-4xl text-slate-800 tracking-wide">
+                        <span class="text-brand-600 font-bold">y</span> = 
+                        <span class="text-blue-600 font-bold">m</span>x + 
+                        <span class="text-orange-500 font-bold">c</span> + 
+                        <span class="text-slate-400 italic text-2xl">&epsilon;</span>
+                    </div>
+
+                    <div class="w-full space-y-3 mt-4">
+                        <div class="flex items-center gap-3 text-sm">
+                            <div class="w-8 h-8 rounded bg-brand-100 text-brand-700 flex items-center justify-center font-bold">y</div>
+                            <div>
+                                <div class="font-bold text-slate-700">Biến phụ thuộc (Dependent)</div>
+                                <div class="text-slate-500">Kết quả (VD: Điểm thi).</div>
+                            </div>
+                        </div>
+                        <div class="flex items-center gap-3 text-sm">
+                            <div class="w-8 h-8 rounded bg-slate-100 text-slate-700 flex items-center justify-center font-bold">x</div>
+                            <div>
+                                <div class="font-bold text-slate-700">Biến độc lập (Independent)</div>
+                                <div class="text-slate-500">Nguyên nhân (VD: Giờ học).</div>
+                            </div>
+                        </div>
+                         <div class="flex items-center gap-3 text-sm">
+                            <div class="w-8 h-8 rounded bg-blue-100 text-blue-700 flex items-center justify-center font-bold">m</div>
+                            <div>
+                                <div class="font-bold text-slate-700">Hệ số góc (Slope)</div>
+                                <div class="text-slate-500">Hiệu quả (Học 1h tăng bao nhiêu điểm?).</div>
+                            </div>
+                        </div>
+                         <div class="flex items-center gap-3 text-sm">
+                            <div class="w-8 h-8 rounded bg-orange-100 text-orange-700 flex items-center justify-center font-bold">c</div>
+                            <div>
+                                <div class="font-bold text-slate-700">Hằng số (Intercept)</div>
+                                <div class="text-slate-500">Điểm "vốn có" nếu không ôn gì.</div>
+                            </div>
+                        </div>
+                        <div class="flex items-center gap-3 text-sm">
+                            <div class="w-8 h-8 rounded bg-gray-100 text-gray-700 flex items-center justify-center font-bold font-serif">&epsilon;</div>
+                            <div>
+                                <div class="font-bold text-slate-700">Sai số (Error)</div>
+                                <div class="text-slate-500">Tâm lý phòng thi, may mắn, trúng tủ...</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Analogy -->
+                <div class="space-y-6">
+                    <h3 class="text-xl font-bold text-slate-900">Ví dụ Sinh viên:</h3>
+                    <div class="bg-slate-50 p-5 rounded-xl border border-slate-200 text-slate-700 text-sm leading-relaxed">
+                        <strong>Nghiên cứu mối liên hệ giữa Ôn thi & Điểm số:</strong>
+                        <ul class="list-disc pl-5 mt-2 space-y-2">
+                            <li><strong>Intercept (c) = 2.0:</strong> Nếu không học giờ nào (x=0), bạn vẫn có thể được 2 điểm nhờ kiến thức cũ hoặc khoanh bừa.</li>
+                            <li><strong>Slope (m) = 0.8:</strong> Cứ mỗi giờ ôn tập nghiêm túc, điểm thi dự kiến tăng thêm 0.8 điểm.</li>
+                            <li><strong>Error ($\epsilon$):</strong> Bạn A học 5 tiếng nhưng điểm thấp vì đau bụng. Bạn B học 2 tiếng nhưng điểm cao vì trúng tủ.</li>
+                        </ul>
+                        <p class="mt-3 font-medium text-brand-600 font-mono">
+                            Điểm số = 0.8 * (Giờ học) + 2.0
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="mt-8 text-center">
+                 <button onclick="switchTab('lab')" class="px-8 py-3 bg-brand-600 hover:bg-brand-500 text-white font-bold rounded-lg transition-all shadow-lg shadow-brand-500/30 flex items-center gap-2 mx-auto">
+                    Thử nghiệm Mô hình <i class="ph-bold ph-arrow-right"></i>
+                </button>
+            </div>
+        </section>
+
+        <!-- SECTION 2: LAB (CORE) -->
+        <section id="lab" class="tab-content hidden animate-slide-up">
+            <div class="grid lg:grid-cols-12 gap-6 h-full">
+                
+                <!-- Controls Sidebar -->
+                <div class="lg:col-span-4 space-y-6">
+                    <div class="glass-panel p-6 rounded-2xl sticky top-24">
+                        <div class="flex justify-between items-center mb-6">
+                            <h3 class="font-bold text-slate-900 text-lg flex items-center gap-2">
+                                <i class="ph-duotone ph-faders text-brand-600"></i> Điều chỉnh
+                            </h3>
+                            <button onclick="autoFit()" class="px-3 py-1 bg-blue-100 text-blue-700 rounded-md text-xs font-bold hover:bg-blue-200 transition-colors flex items-center gap-1">
+                                <i class="ph-bold ph-magic-wand"></i> Tìm đường tốt nhất (Auto)
+                            </button>
+                        </div>
+
+                        <!-- Slope Control -->
+                        <div class="mb-6">
+                            <div class="flex justify-between items-end mb-2">
+                                <label class="text-sm font-bold text-blue-700">Hiệu quả ôn tập (Slope m)</label>
+                                <span class="text-xs font-mono bg-blue-50 text-blue-700 px-2 py-0.5 rounded" id="val-slope">0.8</span>
+                            </div>
+                            <input type="range" id="input-slope" min="0" max="2" step="0.1" value="0.8" class="w-full accent-blue-600">
+                            <p class="text-xs text-slate-400 mt-1">Học 1 giờ tăng bao nhiêu điểm?</p>
+                        </div>
+
+                        <!-- Intercept Control -->
+                        <div class="mb-6">
+                            <div class="flex justify-between items-end mb-2">
+                                <label class="text-sm font-bold text-orange-700">Điểm gốc (Intercept c)</label>
+                                <span class="text-xs font-mono bg-orange-50 text-orange-700 px-2 py-0.5 rounded" id="val-intercept">2.0</span>
+                            </div>
+                            <input type="range" id="input-intercept" min="0" max="5" step="0.5" value="2.0" class="w-full accent-orange-600">
+                            <p class="text-xs text-slate-400 mt-1">Điểm khi chưa ôn thi phút nào.</p>
+                        </div>
+                        
+                        <hr class="border-slate-100 my-6">
+
+                        <!-- Noise Control -->
+                        <div class="mb-6">
+                            <div class="flex justify-between items-end mb-2">
+                                <label class="text-sm font-medium text-slate-600">Độ biến động (Noise)</label>
+                                <button onclick="generateData()" class="text-xs text-brand-600 hover:underline flex items-center gap-1">
+                                    <i class="ph-bold ph-arrows-clockwise"></i> Tạo dữ liệu mới
+                                </button>
+                            </div>
+                            <input type="range" id="input-noise" min="0" max="5" step="0.5" value="1.5" class="w-full accent-slate-400">
+                            <p class="text-xs text-slate-400 mt-1">Các yếu tố ngoại cảnh (may mắn, sức khỏe...).</p>
+                        </div>
+
+                        <div class="bg-slate-900 text-white p-4 rounded-lg mt-4">
+                            <div class="text-xs text-slate-400 uppercase font-bold mb-2">Phương trình dự báo</div>
+                            <div class="font-mono text-sm" id="model-equation">
+                                Điểm = 0.80 * Giờ + 2.00
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+
+                <!-- Visualization Area -->
+                <div class="lg:col-span-8 space-y-6">
+                    
+                    <!-- Metrics Header -->
+                    <div class="grid grid-cols-2 gap-4">
+                        <div class="glass-panel p-4 rounded-xl flex flex-col justify-center border-l-4 border-red-400">
+                            <div class="text-xs text-slate-500 font-medium uppercase tracking-wider mb-1 flex items-center gap-1">
+                                Sai số tổng (MSE)
+                                <i class="ph-fill ph-info cursor-help" title="Càng nhỏ càng tốt. Cho biết đường thẳng của bạn lệch bao nhiêu so với thực tế."></i>
+                            </div>
+                            <div class="text-3xl font-mono font-bold text-slate-800" id="res-mse">--</div>
+                        </div>
+                        <div class="glass-panel p-4 rounded-xl flex flex-col justify-center border-l-4 border-brand-500">
+                            <div class="text-xs text-slate-500 font-medium uppercase tracking-wider mb-1">Độ chính xác ($R^2$)</div>
+                            <div class="text-3xl font-mono font-bold text-brand-600" id="res-r2">--</div>
+                            <div class="text-xs text-slate-400 mt-1">Gần 1.0 là dự báo rất chuẩn</div>
+                        </div>
+                    </div>
+
+                    <!-- Canvas -->
+                    <div class="glass-panel p-1 rounded-2xl shadow-sm bg-white overflow-hidden relative">
+                         <!-- Legend -->
+                         <div class="absolute top-4 left-4 z-10 flex gap-4 text-xs font-medium bg-white/90 p-2 rounded-lg backdrop-blur shadow-sm border border-slate-100">
+                            <div class="flex items-center gap-2">
+                                <span class="w-3 h-3 rounded-full bg-slate-400"></span> Sinh viên (Thực tế)
+                            </div>
+                            <div class="flex items-center gap-2">
+                                <span class="w-8 h-1 bg-brand-500"></span> Dự báo (Mô hình)
+                            </div>
+                            <div class="flex items-center gap-2">
+                                <span class="w-3 h-3 bg-red-200 border border-red-400"></span> Sai lệch (Residual)
+                            </div>
+                        </div>
+
+                        <div class="canvas-container bg-white cursor-crosshair">
+                            <canvas id="regCanvas"></canvas>
+                        </div>
+                    </div>
+
+                    <!-- Explanation -->
+                    <div class="p-4 rounded-xl bg-slate-100 text-sm text-slate-600 border border-slate-200">
+                        <p>
+                            <strong>Residuals (Phần dư):</strong> Là các ô vuông màu đỏ.
+                            <br>Nó đại diện cho những thứ mà mô hình "Giờ học" không giải thích được (ví dụ: thông minh sẵn, may mắn). Mục tiêu của Hồi quy là kéo đường thẳng sao cho tổng diện tích các ô vuông đỏ này là bé nhất.
+                        </p>
+                    </div>
+
+                </div>
+            </div>
+        </section>
+
+        <!-- SECTION 3: GLOSSARY -->
+        <section id="glossary" class="tab-content hidden animate-fade-in">
+            <div class="max-w-4xl mx-auto">
+                <h2 class="text-3xl font-bold text-center text-slate-900 mb-2">Từ điển Tâm lý học Thống kê</h2>
+                <p class="text-center text-slate-500 mb-10">Giải mã các thuật ngữ khô khan trong SPSS/Jamovi.</p>
+                
+                <div class="grid gap-4">
+                    
+                    <!-- Term 1 -->
+                    <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm flex flex-col md:flex-row gap-4">
+                        <div class="w-full md:w-1/3">
+                            <div class="text-brand-700 font-bold text-lg">Linear Regression</div>
+                            <div class="text-slate-400 font-mono text-xs">Hồi quy tuyến tính</div>
+                        </div>
+                        <div class="w-full md:w-2/3 text-slate-700 text-sm leading-relaxed">
+                            Không phải là "quay về quá khứ". Nó đơn giản là vẽ một đường thẳng đi xuyên qua đám mây dữ liệu để tìm ra quy luật chung.
+                            <br>Ví dụ: Tìm quy luật giữa <em>Sự tự tin</em> và <em>Khả năng thuyết trình</em>.
+                        </div>
+                    </div>
+
+                    <!-- Term 2 -->
+                    <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm flex flex-col md:flex-row gap-4">
+                        <div class="w-full md:w-1/3">
+                            <div class="text-brand-700 font-bold text-lg">Residuals (Phần dư)</div>
+                            <div class="text-slate-400 font-mono text-xs">Sai số dự báo</div>
+                        </div>
+                        <div class="w-full md:w-2/3 text-slate-700 text-sm leading-relaxed">
+                            Là sự khác biệt giữa thực tế và lý thuyết.
+                            <br>Lý thuyết nói học 10 tiếng được 10 điểm, nhưng thực tế bạn chỉ được 8 điểm. Vậy Residual = -2. Đây là phần mà mô hình chưa hiểu được về bạn.
+                        </div>
+                    </div>
+
+                    <!-- Term 3 -->
+                    <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm flex flex-col md:flex-row gap-4">
+                        <div class="w-full md:w-1/3">
+                            <div class="text-brand-700 font-bold text-lg">R-squared ($R^2$)</div>
+                            <div class="text-slate-400 font-mono text-xs">Hệ số xác định</div>
+                        </div>
+                        <div class="w-full md:w-2/3 text-slate-700 text-sm leading-relaxed">
+                            Cho biết mô hình "giỏi" đến mức nào.
+                            <br>$R^2 = 0.6$ nghĩa là "Giờ học" giải thích được 60% lý do điểm cao/thấp. Còn 40% còn lại là do các yếu tố khác (may mắn, IQ...) mà ta chưa xét đến.
+                        </div>
+                    </div>
+
+                    <!-- Term 4 -->
+                    <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm flex flex-col md:flex-row gap-4">
+                        <div class="w-full md:w-1/3">
+                            <div class="text-brand-700 font-bold text-lg">Homoscedasticity</div>
+                            <div class="text-slate-400 font-mono text-xs">Phương sai đồng nhất</div>
+                        </div>
+                        <div class="w-full md:w-2/3 text-slate-700 text-sm leading-relaxed">
+                            Giả định rằng sai số phải ổn định. 
+                            <br>Không được phép có chuyện: "Với người học ít thì dự đoán rất chuẩn, nhưng với người học nhiều thì dự đoán sai lung tung". Độ sai lệch phải tương đương nhau ở mọi mức độ.
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <footer class="bg-white border-t border-slate-200 py-8 mt-auto">
+        <div class="container mx-auto px-4 text-center">
+            <p class="text-slate-400 font-mono text-xs">
+                (c) duyetbot | Psychology Statistics Tool
+            </p>
+        </div>
+    </footer>
+
+    <!-- LOGIC SCRIPT -->
+    <script>
+        // --- STATE ---
+        const state = {
+            m: 0.8,    // User slope
+            c: 2.0,    // User intercept
+            trueM: 0.8,// True slope used for generation
+            trueC: 2.0, // True intercept
+            noiseLevel: 1.5,
+            points: [] // Array of {x, y}
+        };
+
+        // --- DOM ELEMENTS ---
+        const els = {
+            inSlope: document.getElementById('input-slope'),
+            inIntercept: document.getElementById('input-intercept'),
+            inNoise: document.getElementById('input-noise'),
+            
+            lblSlope: document.getElementById('val-slope'),
+            lblIntercept: document.getElementById('val-intercept'),
+            lblEq: document.getElementById('model-equation'),
+            
+            resMse: document.getElementById('res-mse'),
+            resR2: document.getElementById('res-r2'),
+            
+            canvas: document.getElementById('regCanvas')
+        };
+        const ctx = els.canvas.getContext('2d');
+
+        // --- INIT ---
+        function init() {
+            resizeCanvas();
+            window.addEventListener('resize', () => { resizeCanvas(); draw(); });
+
+            // Event Listeners
+            els.inSlope.addEventListener('input', (e) => {
+                state.m = parseFloat(e.target.value);
+                els.lblSlope.innerText = state.m.toFixed(1);
+                updateModel();
+            });
+
+            els.inIntercept.addEventListener('input', (e) => {
+                state.c = parseFloat(e.target.value);
+                els.lblIntercept.innerText = state.c.toFixed(1);
+                updateModel();
+            });
+
+            els.inNoise.addEventListener('input', (e) => {
+                state.noiseLevel = parseFloat(e.target.value);
+                generateData(); // Regenerate on noise change
+            });
+
+            // Start
+            generateData();
+            switchTab('concept');
+        }
+
+        function resizeCanvas() {
+            const container = els.canvas.parentElement;
+            els.canvas.width = container.clientWidth * 2;
+            els.canvas.height = container.clientHeight * 2;
+            els.canvas.style.width = container.clientWidth + 'px';
+            els.canvas.style.height = container.clientHeight + 'px';
+            ctx.scale(2, 2);
+        }
+
+        // --- DATA GENERATION ---
+        function generateData() {
+            state.points = [];
+            const n = 20;
+            // Generate points based on "True" model + Noise
+            for (let i = 0; i < n; i++) {
+                // X: Study hours (0 to 10 hours)
+                const x = Math.random() * 10; 
+                
+                // Y: Score = 0.8x + 2 + Noise
+                const noise = (Math.random() - 0.5) * state.noiseLevel * 4; 
+                let y = state.trueM * x + state.trueC + noise;
+                
+                // Clamp Y to realistic score (0 to 10)
+                if (y < 0) y = 0;
+                if (y > 10) y = 10;
+
+                state.points.push({x, y});
+            }
+            updateModel();
+        }
+
+        // --- CALCULATION ---
+        function updateModel() {
+            // Update Text
+            els.lblEq.innerText = `Điểm = ${state.m.toFixed(2)} * Giờ + ${state.c.toFixed(2)}`;
+
+            // Calculate Metrics
+            let sse = 0; // Sum Squared Error
+            let sst = 0; // Total Sum of Squares (variance from mean)
+            
+            // Calculate Mean Y
+            const meanY = state.points.reduce((sum, p) => sum + p.y, 0) / state.points.length;
+
+            state.points.forEach(p => {
+                const yPred = state.m * p.x + state.c;
+                const residual = p.y - yPred;
+                sse += residual * residual;
+                sst += (p.y - meanY) * (p.y - meanY);
+            });
+
+            const mse = sse / state.points.length;
+            const r2 = 1 - (sse / sst);
+
+            // UI Updates
+            els.resMse.innerText = mse.toFixed(2);
+            // Handle negative R2 if user draws a terrible line
+            els.resR2.innerText = r2.toFixed(3);
+            
+            // Color code R2
+            if(r2 > 0.8) els.resR2.className = "text-3xl font-mono font-bold text-green-600";
+            else if (r2 > 0.5) els.resR2.className = "text-3xl font-mono font-bold text-yellow-600";
+            else els.resR2.className = "text-3xl font-mono font-bold text-slate-400";
+
+            draw();
+        }
+
+        // --- AUTO FIT (OLS) ---
+        window.autoFit = function() {
+            // Simple OLS formula
+            const n = state.points.length;
+            let sumX = 0, sumY = 0, sumXY = 0, sumXX = 0;
+            
+            state.points.forEach(p => {
+                sumX += p.x;
+                sumY += p.y;
+                sumXY += p.x * p.y;
+                sumXX += p.x * p.x;
+            });
+
+            const slope = (n * sumXY - sumX * sumY) / (n * sumXX - sumX * sumX);
+            const intercept = (sumY - slope * sumX) / n;
+
+            // Animate values
+            state.m = slope;
+            state.c = intercept;
+            
+            // Update Inputs
+            els.inSlope.value = slope;
+            els.inIntercept.value = intercept;
+            els.lblSlope.innerText = slope.toFixed(1);
+            els.lblIntercept.innerText = intercept.toFixed(1);
+            
+            updateModel();
+        }
+
+        // --- DRAWING ---
+        function draw() {
+            const width = els.canvas.width / 2;
+            const height = els.canvas.height / 2;
+            ctx.clearRect(0, 0, width, height);
+
+            // Coordinate System Setup
+            // X: 0 to 10 hours
+            // Y: 0 to 10 points
+            const padding = 40;
+            const drawWidth = width - padding * 2;
+            const drawHeight = height - padding * 2;
+
+            // Scale functions (Fixed scale 0-10 for easy understanding)
+            const mapX = (x) => padding + (x / 10) * drawWidth;
+            const mapY = (y) => height - padding - (y / 10) * drawHeight;
+
+            // 1. Draw Grid
+            ctx.strokeStyle = "#f1f5f9";
+            ctx.lineWidth = 1;
+            // Vertical lines
+            for(let i=0; i<=10; i++) {
+                ctx.beginPath();
+                ctx.moveTo(mapX(i), padding);
+                ctx.lineTo(mapX(i), height - padding);
+                ctx.stroke();
+            }
+            // Horizontal lines
+            for(let i=0; i<=10; i++) {
+                ctx.beginPath();
+                ctx.moveTo(padding, mapY(i));
+                ctx.lineTo(width - padding, mapY(i));
+                ctx.stroke();
+            }
+
+            // 2. Draw Axes
+            ctx.strokeStyle = "#cbd5e1";
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            // Y Axis
+            ctx.moveTo(padding, padding);
+            ctx.lineTo(padding, height - padding);
+            // X Axis
+            ctx.lineTo(width - padding, height - padding);
+            ctx.stroke();
+
+            // Labels
+            ctx.fillStyle = "#64748b";
+            ctx.font = "10px Inter";
+            ctx.fillText("0", padding - 15, height - padding + 15);
+            ctx.fillText("Giờ ôn thi (h)", width - padding - 60, height - padding + 30);
+            ctx.save();
+            ctx.translate(15, height / 2);
+            ctx.rotate(-Math.PI/2);
+            ctx.fillText("Điểm thi (0-10)", 0, 0);
+            ctx.restore();
+
+            // 3. Draw Prediction Line
+            ctx.beginPath();
+            // Start point (x=0)
+            const yStart = state.m * 0 + state.c;
+            const yEnd = state.m * 10 + state.c;
+            
+            ctx.moveTo(mapX(0), mapY(yStart));
+            ctx.lineTo(mapX(10), mapY(yEnd));
+            ctx.strokeStyle = "#d946ef"; // brand-500
+            ctx.lineWidth = 3;
+            ctx.stroke();
+
+            // 4. Draw Residuals (Squares)
+            state.points.forEach(p => {
+                const yPred = state.m * p.x + state.c;
+                
+                // Draw Line connecting point to prediction
+                ctx.beginPath();
+                ctx.moveTo(mapX(p.x), mapY(p.y));
+                ctx.lineTo(mapX(p.x), mapY(yPred));
+                ctx.strokeStyle = "#fca5a5"; // red-300
+                ctx.lineWidth = 1;
+                ctx.setLineDash([2, 2]);
+                ctx.stroke();
+                ctx.setLineDash([]);
+
+                // Draw Square (Visualizing Squared Error)
+                // Size of square = Residual
+                const pxSize = Math.abs(mapY(p.y) - mapY(yPred)); // Convert to pixels
+                
+                ctx.fillStyle = "rgba(252, 165, 165, 0.2)"; // red-300 low opacity
+                // Draw square to the right of the line
+                if (pxSize > 2) {
+                     // Adjust square drawing to be centered or to side
+                     const startY = Math.min(mapY(p.y), mapY(yPred));
+                     ctx.fillRect(mapX(p.x), startY, pxSize, pxSize);
+                }
+            });
+
+            // 5. Draw Points
+            state.points.forEach(p => {
+                ctx.beginPath();
+                ctx.arc(mapX(p.x), mapY(p.y), 6, 0, Math.PI * 2);
+                ctx.fillStyle = "#475569"; // slate-600
+                ctx.fill();
+                ctx.strokeStyle = "white";
+                ctx.lineWidth = 2;
+                ctx.stroke();
+            });
+        }
+
+        // --- TABS ---
+        window.switchTab = function(tabId) {
+            document.querySelectorAll('.nav-btn').forEach(btn => {
+                if (btn.dataset.target === tabId) {
+                    btn.classList.add('bg-slate-200', 'text-slate-900', 'shadow-sm');
+                    btn.classList.remove('text-slate-600');
+                } else {
+                    btn.classList.remove('bg-slate-200', 'text-slate-900', 'shadow-sm');
+                    btn.classList.add('text-slate-600');
+                }
+            });
+            document.querySelectorAll('.tab-content').forEach(content => {
+                content.classList.toggle('hidden', content.id !== tabId);
+            });
+            if (tabId === 'lab') {
+                setTimeout(() => { resizeCanvas(); draw(); }, 50);
+            }
+        }
+
+        init();
+    </script>
+</body>
+</html>
