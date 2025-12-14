@@ -1,0 +1,872 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>T-Test Master Class: Trực quan & Chuyên sâu</title>
+    
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Icons (Phosphor Icons) -->
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+
+    <!-- Chart.js (Optional, but we will use raw Canvas for better control of Bell Curves) -->
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                        mono: ['JetBrains Mono', 'monospace'],
+                    },
+                    colors: {
+                        brand: {
+                            50: '#eff6ff',
+                            100: '#dbeafe',
+                            500: '#3b82f6',
+                            600: '#2563eb',
+                            700: '#1d4ed8',
+                            900: '#1e3a8a',
+                        },
+                        accent: {
+                            500: '#8b5cf6', // Purple
+                            600: '#7c3aed',
+                        }
+                    },
+                    animation: {
+                        'fade-in': 'fadeIn 0.5s ease-out',
+                        'slide-up': 'slideUp 0.5s ease-out',
+                    },
+                    keyframes: {
+                        fadeIn: {
+                            '0%': { opacity: '0' },
+                            '100%': { opacity: '1' },
+                        },
+                        slideUp: {
+                            '0%': { transform: 'translateY(20px)', opacity: '0' },
+                            '100%': { transform: 'translateY(0)', opacity: '1' },
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #f1f5f9; 
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #cbd5e1; 
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #94a3b8; 
+        }
+
+        /* Range Slider Styling */
+        input[type=range] {
+            -webkit-appearance: none; 
+            background: transparent; 
+        }
+        input[type=range]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            height: 20px;
+            width: 20px;
+            border-radius: 50%;
+            background: #ffffff;
+            border: 2px solid #3b82f6;
+            cursor: pointer;
+            margin-top: -8px; 
+            box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+            transition: transform 0.1s;
+        }
+        input[type=range]::-webkit-slider-thumb:hover {
+            transform: scale(1.1);
+        }
+        input[type=range]::-webkit-slider-runnable-track {
+            width: 100%;
+            height: 6px;
+            cursor: pointer;
+            background: #e2e8f0;
+            border-radius: 4px;
+        }
+        
+        .glass-panel {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.5);
+            box-shadow: 0 10px 30px -5px rgba(0, 0, 0, 0.05);
+        }
+
+        .canvas-container {
+            position: relative;
+            width: 100%;
+            height: 350px;
+        }
+    </style>
+</head>
+<body class="bg-slate-50 text-slate-800 antialiased min-h-screen flex flex-col">
+
+    <!-- Header -->
+    <header class="sticky top-0 z-50 bg-white/80 backdrop-blur-md border-b border-slate-200">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+            <div class="flex items-center gap-3">
+                <div class="w-10 h-10 bg-brand-600 rounded-xl flex items-center justify-center text-white shadow-lg shadow-brand-500/30">
+                    <i class="ph-bold ph-function text-2xl"></i>
+                </div>
+                <div>
+                    <h1 class="font-bold text-xl tracking-tight text-slate-900">T-Test <span class="text-brand-600">Master</span></h1>
+                    <p class="text-xs text-slate-500 font-medium">Interactive Statistical Learning</p>
+                </div>
+            </div>
+
+            <!-- Desktop Nav -->
+            <nav class="hidden md:flex gap-1 bg-slate-100 p-1 rounded-lg">
+                <button onclick="switchTab('story')" class="nav-btn active px-4 py-2 text-sm font-medium rounded-md transition-all duration-200 text-slate-600 hover:text-slate-900" data-target="story">
+                    <i class="ph ph-book-open-text mr-1.5"></i> Câu chuyện
+                </button>
+                <button onclick="switchTab('lab')" class="nav-btn px-4 py-2 text-sm font-medium rounded-md transition-all duration-200 text-slate-600 hover:text-slate-900" data-target="lab">
+                    <i class="ph ph-flask mr-1.5"></i> Phòng thí nghiệm
+                </button>
+                <button onclick="switchTab('anatomy')" class="nav-btn px-4 py-2 text-sm font-medium rounded-md transition-all duration-200 text-slate-600 hover:text-slate-900" data-target="anatomy">
+                    <i class="ph ph-exam mr-1.5"></i> Giải phẫu
+                </button>
+                <button onclick="switchTab('types')" class="nav-btn px-4 py-2 text-sm font-medium rounded-md transition-all duration-200 text-slate-600 hover:text-slate-900" data-target="types">
+                    <i class="ph ph-tree-structure mr-1.5"></i> Phân loại
+                </button>
+                <button onclick="switchTab('glossary')" class="nav-btn px-4 py-2 text-sm font-medium rounded-md transition-all duration-200 text-slate-600 hover:text-slate-900" data-target="glossary">
+                    <i class="ph ph-translate mr-1.5"></i> Thuật ngữ
+                </button>
+            </nav>
+            
+            <button class="md:hidden p-2 text-slate-600" onclick="alert('Vui lòng sử dụng màn hình lớn hơn để có trải nghiệm tốt nhất!')">
+                <i class="ph ph-list text-2xl"></i>
+            </button>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="flex-grow container mx-auto px-4 py-8 max-w-7xl">
+        
+        <!-- SECTION 1: STORY -->
+        <section id="story" class="tab-content block animate-fade-in">
+            <div class="grid lg:grid-cols-2 gap-12 items-center">
+                <div class="space-y-6">
+                    <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-orange-100 text-orange-700 text-sm font-semibold border border-orange-200">
+                        <i class="ph-fill ph-coffee"></i> Case Study: Cà phê Start-up
+                    </div>
+                    <h2 class="text-4xl md:text-5xl font-bold text-slate-900 leading-tight">
+                        Liệu công thức mới <br/> có thực sự <span class="text-transparent bg-clip-text bg-gradient-to-r from-brand-600 to-accent-500">hiệu quả hơn?</span>
+                    </h2>
+                    <p class="text-lg text-slate-600 leading-relaxed">
+                        Bạn là một Data Engineer tại chuỗi cà phê lớn. Đội R&D vừa tung ra dòng sản phẩm <strong>"CodeBrew X"</strong>, tuyên bố giúp lập trình viên fix bug nhanh hơn 20%.
+                    </p>
+                    
+                    <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 space-y-4">
+                        <div class="flex items-center gap-4">
+                            <div class="w-12 h-12 rounded-full bg-blue-100 flex items-center justify-center text-blue-600 shrink-0">
+                                <span class="font-bold text-xl">A</span>
+                            </div>
+                            <div>
+                                <h3 class="font-bold text-slate-900">Nhóm Đối chứng (Control)</h3>
+                                <p class="text-sm text-slate-500">30 Dev uống cà phê thường. Trung bình fix 5 bug/giờ.</p>
+                            </div>
+                        </div>
+                        <div class="w-full h-px bg-slate-100"></div>
+                        <div class="flex items-center gap-4">
+                            <div class="w-12 h-12 rounded-full bg-purple-100 flex items-center justify-center text-purple-600 shrink-0">
+                                <span class="font-bold text-xl">B</span>
+                            </div>
+                            <div>
+                                <h3 class="font-bold text-slate-900">Nhóm Thử nghiệm (Treatment)</h3>
+                                <p class="text-sm text-slate-500">30 Dev uống <strong>CodeBrew X</strong>. Trung bình fix 6 bug/giờ.</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="bg-slate-900 text-white p-6 rounded-xl relative overflow-hidden">
+                        <div class="absolute top-0 right-0 opacity-10 transform translate-x-1/4 -translate-y-1/4">
+                            <i class="ph-fill ph-question text-9xl"></i>
+                        </div>
+                        <h3 class="font-bold text-lg mb-2 text-yellow-400">Câu hỏi triệu đô:</h3>
+                        <p class="text-slate-300">
+                            Sự khác biệt (6 vs 5) là do công thức thuốc thực sự hiệu quả (Signal), hay chỉ do ngẫu nhiên chọn được dev giỏi vào nhóm B (Noise)?
+                        </p>
+                        <button onclick="switchTab('lab')" class="mt-4 px-6 py-2.5 bg-brand-600 hover:bg-brand-500 text-white font-semibold rounded-lg transition-colors flex items-center gap-2">
+                            Kiểm chứng ngay <i class="ph-bold ph-arrow-right"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <div class="relative">
+                    <!-- Decorative BG -->
+                    <div class="absolute -inset-4 bg-gradient-to-r from-blue-100 to-purple-100 rounded-full blur-3xl opacity-50 z-0"></div>
+                    <img src="https://images.unsplash.com/photo-1551033406-611cf9a28f67?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80" alt="Programming with coffee" class="relative z-10 rounded-2xl shadow-2xl border-4 border-white transform rotate-2 hover:rotate-0 transition-transform duration-500">
+                    
+                    <!-- Floating Badge -->
+                    <div class="absolute -bottom-6 -left-6 z-20 bg-white p-4 rounded-xl shadow-xl border border-slate-100 flex items-center gap-3 animate-bounce" style="animation-duration: 3s;">
+                        <div class="bg-green-100 p-2 rounded-lg text-green-600">
+                            <i class="ph-fill ph-chart-line-up text-2xl"></i>
+                        </div>
+                        <div>
+                            <div class="text-xs text-slate-500 font-bold uppercase">Hiệu suất</div>
+                            <div class="text-lg font-bold text-slate-900">+20% ???</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- SECTION 2: LAB (CORE) -->
+        <section id="lab" class="tab-content hidden animate-slide-up">
+            <div class="grid lg:grid-cols-12 gap-6 h-full">
+                
+                <!-- Sidebar Controls -->
+                <div class="lg:col-span-4 space-y-6">
+                    <div class="glass-panel p-6 rounded-2xl sticky top-24">
+                        <h3 class="font-bold text-slate-900 text-lg mb-6 flex items-center gap-2">
+                            <i class="ph-duotone ph-sliders-horizontal text-brand-600"></i> Tham số thử nghiệm
+                        </h3>
+
+                        <!-- Group A Control -->
+                        <div class="mb-6 group">
+                            <div class="flex justify-between items-end mb-2">
+                                <label class="text-sm font-medium text-slate-700">Nhóm A (Mean)</label>
+                                <span class="text-xs font-mono bg-blue-100 text-blue-700 px-2 py-0.5 rounded" id="val-mean-a">50</span>
+                            </div>
+                            <input type="range" id="input-mean-a" min="30" max="70" value="50" class="w-full accent-blue-600">
+                            <div class="text-xs text-slate-400 mt-1">Trung bình số bug fix được (Đối chứng)</div>
+                        </div>
+
+                        <!-- Group B Control -->
+                        <div class="mb-6 group">
+                            <div class="flex justify-between items-end mb-2">
+                                <label class="text-sm font-medium text-slate-700">Nhóm B (Mean)</label>
+                                <span class="text-xs font-mono bg-purple-100 text-purple-700 px-2 py-0.5 rounded" id="val-mean-b">55</span>
+                            </div>
+                            <input type="range" id="input-mean-b" min="30" max="70" value="55" class="w-full accent-purple-600">
+                            <div class="text-xs text-slate-400 mt-1">Trung bình số bug fix được (Thử nghiệm)</div>
+                        </div>
+
+                        <hr class="border-slate-100 my-6">
+
+                        <!-- SD Control -->
+                        <div class="mb-6">
+                            <div class="flex justify-between items-end mb-2">
+                                <label class="text-sm font-medium text-slate-700 flex items-center gap-1">
+                                    Độ lệch chuẩn (SD)
+                                    <i class="ph-fill ph-info text-slate-400 cursor-help" title="Độ phân tán của dữ liệu. SD càng cao, dữ liệu càng lộn xộn, biểu đồ càng bè ra."></i>
+                                </label>
+                                <span class="text-xs font-mono bg-slate-100 text-slate-700 px-2 py-0.5 rounded" id="val-sd">10</span>
+                            </div>
+                            <input type="range" id="input-sd" min="2" max="20" value="10" class="w-full accent-slate-600">
+                        </div>
+
+                        <!-- N Control -->
+                        <div class="mb-2">
+                            <div class="flex justify-between items-end mb-2">
+                                <label class="text-sm font-medium text-slate-700">Cỡ mẫu (N)</label>
+                                <span class="text-xs font-mono bg-slate-100 text-slate-700 px-2 py-0.5 rounded" id="val-n">30</span>
+                            </div>
+                            <input type="range" id="input-n" min="5" max="200" value="30" class="w-full accent-slate-600">
+                            <div class="text-xs text-slate-400 mt-1">Số lượng người tham gia mỗi nhóm</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Main Visualization Area -->
+                <div class="lg:col-span-8 space-y-6">
+                    
+                    <!-- Result Cards -->
+                    <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                        <div class="glass-panel p-4 rounded-xl text-center">
+                            <div class="text-xs text-slate-500 font-medium uppercase tracking-wider mb-1">Signal (Diff)</div>
+                            <div class="text-2xl font-bold text-slate-800" id="res-signal">5.0</div>
+                        </div>
+                        <div class="glass-panel p-4 rounded-xl text-center">
+                            <div class="text-xs text-slate-500 font-medium uppercase tracking-wider mb-1">Noise (SE)</div>
+                            <div class="text-2xl font-bold text-slate-800" id="res-noise">2.58</div>
+                        </div>
+                        <div class="glass-panel p-4 rounded-xl text-center ring-2 ring-brand-100">
+                            <div class="text-xs text-brand-600 font-bold uppercase tracking-wider mb-1">T-Score</div>
+                            <div class="text-3xl font-mono font-bold text-brand-600" id="res-t">1.94</div>
+                        </div>
+                        <div class="glass-panel p-4 rounded-xl text-center transition-colors duration-300" id="p-value-card">
+                            <div class="text-xs text-slate-500 font-medium uppercase tracking-wider mb-1">P-Value</div>
+                            <div class="text-2xl font-mono font-bold text-slate-800" id="res-p">0.051</div>
+                        </div>
+                    </div>
+
+                    <!-- Canvas Chart -->
+                    <div class="glass-panel p-1 rounded-2xl shadow-sm bg-white overflow-hidden relative">
+                        <div class="absolute top-4 left-4 z-10 flex gap-4 text-xs font-medium">
+                            <div class="flex items-center gap-2">
+                                <span class="w-3 h-3 rounded-full bg-blue-500"></span> Nhóm A
+                            </div>
+                            <div class="flex items-center gap-2">
+                                <span class="w-3 h-3 rounded-full bg-purple-500"></span> Nhóm B
+                            </div>
+                             <div class="flex items-center gap-2">
+                                <span class="w-3 h-3 rounded-full bg-slate-300 opacity-50"></span> Vùng trùng lặp
+                            </div>
+                        </div>
+                        
+                        <div class="canvas-container bg-gradient-to-b from-slate-50/50 to-white">
+                            <canvas id="bellCurveCanvas"></canvas>
+                        </div>
+                    </div>
+
+                    <!-- Conclusion Box -->
+                    <div id="conclusion-box" class="p-6 rounded-xl border-l-4 transition-all duration-300 bg-slate-100 border-slate-400">
+                        <h4 class="font-bold text-lg mb-2 flex items-center gap-2" id="conclusion-title">
+                            <i class="ph-fill ph-spinner animate-spin"></i> Đang tính toán...
+                        </h4>
+                        <p class="text-slate-700 text-sm leading-relaxed" id="conclusion-text">
+                            ...
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- SECTION 3: ANATOMY -->
+        <section id="anatomy" class="tab-content hidden animate-fade-in">
+            <div class="max-w-4xl mx-auto space-y-12">
+                <div class="text-center">
+                    <h2 class="text-3xl font-bold text-slate-900">Giải phẫu "T-Test"</h2>
+                    <p class="text-slate-500 mt-2">Bản chất của T-test là cuộc chiến giữa Tín hiệu và Nhiễu</p>
+                </div>
+
+                <!-- Interactive Formula -->
+                <div class="flex flex-col md:flex-row items-center justify-center gap-8 py-10 select-none">
+                    <div class="text-6xl font-serif font-bold text-brand-600 italic">t</div>
+                    <div class="text-4xl text-slate-300">=</div>
+                    <div class="flex flex-col items-center gap-4 w-full md:w-auto">
+                        <!-- Numerator -->
+                        <div class="relative group cursor-pointer w-full md:w-64">
+                            <div class="absolute -inset-1 bg-gradient-to-r from-green-400 to-emerald-600 rounded-lg blur opacity-25 group-hover:opacity-50 transition duration-200"></div>
+                            <div class="relative bg-white border border-green-200 p-4 rounded-lg text-center shadow-sm">
+                                <div class="text-green-700 font-bold text-lg">Tín hiệu (Signal)</div>
+                                <div class="text-xs text-slate-500">Mean A - Mean B</div>
+                            </div>
+                            <!-- Tooltip -->
+                            <div class="absolute left-full top-1/2 -translate-y-1/2 ml-4 w-64 bg-slate-800 text-white text-xs p-3 rounded shadow-xl opacity-0 group-hover:opacity-100 transition-opacity z-50 pointer-events-none hidden md:block">
+                                Sự khác biệt về giá trị trung bình giữa hai nhóm. Càng lớn càng tốt.
+                                <div class="absolute left-0 top-1/2 -translate-y-1/2 -ml-1 border-4 border-transparent border-r-slate-800"></div>
+                            </div>
+                        </div>
+                        
+                        <!-- Divider -->
+                        <div class="w-full h-1 bg-slate-800 rounded-full"></div>
+
+                        <!-- Denominator -->
+                        <div class="relative group cursor-pointer w-full md:w-64">
+                            <div class="absolute -inset-1 bg-gradient-to-r from-red-400 to-pink-600 rounded-lg blur opacity-25 group-hover:opacity-50 transition duration-200"></div>
+                            <div class="relative bg-white border border-red-200 p-4 rounded-lg text-center shadow-sm">
+                                <div class="text-red-700 font-bold text-lg">Nhiễu (Noise)</div>
+                                <div class="text-xs text-slate-500">Standard Error (SE)</div>
+                            </div>
+                             <!-- Tooltip -->
+                             <div class="absolute left-full top-1/2 -translate-y-1/2 ml-4 w-64 bg-slate-800 text-white text-xs p-3 rounded shadow-xl opacity-0 group-hover:opacity-100 transition-opacity z-50 pointer-events-none hidden md:block">
+                                Sự biến thiên nội bộ của dữ liệu. Phụ thuộc vào Độ lệch chuẩn (SD) và Cỡ mẫu (N).
+                                <div class="absolute left-0 top-1/2 -translate-y-1/2 -ml-1 border-4 border-transparent border-r-slate-800"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Explanation Grid -->
+                <div class="grid md:grid-cols-2 gap-8">
+                    <div class="bg-white p-6 rounded-xl border border-slate-200 shadow-sm hover:border-brand-300 transition-colors">
+                        <div class="w-10 h-10 bg-brand-100 text-brand-600 rounded-lg flex items-center justify-center mb-4">
+                            <i class="ph-bold ph-trend-up text-xl"></i>
+                        </div>
+                        <h3 class="font-bold text-slate-900 mb-2">Làm sao để tăng t-score?</h3>
+                        <ul class="space-y-2 text-sm text-slate-600">
+                            <li class="flex items-start gap-2">
+                                <i class="ph-fill ph-check-circle text-green-500 mt-0.5"></i>
+                                <span>Tăng sự khác biệt giữa hai nhóm (Tín hiệu mạnh hơn).</span>
+                            </li>
+                            <li class="flex items-start gap-2">
+                                <i class="ph-fill ph-check-circle text-green-500 mt-0.5"></i>
+                                <span>Giảm độ lệch chuẩn (Quy trình chuẩn hóa hơn).</span>
+                            </li>
+                            <li class="flex items-start gap-2">
+                                <i class="ph-fill ph-check-circle text-green-500 mt-0.5"></i>
+                                <span><strong>Tăng cỡ mẫu (N):</strong> Đây là cách dễ nhất. N càng lớn, sai số chuẩn (SE) càng nhỏ.</span>
+                            </li>
+                        </ul>
+                    </div>
+
+                    <div class="bg-white p-6 rounded-xl border border-slate-200 shadow-sm hover:border-brand-300 transition-colors">
+                         <div class="w-10 h-10 bg-accent-100 text-accent-600 rounded-lg flex items-center justify-center mb-4">
+                            <i class="ph-bold ph-magic-wand text-xl"></i>
+                        </div>
+                        <h3 class="font-bold text-slate-900 mb-2">P-value thực chất là gì?</h3>
+                        <p class="text-sm text-slate-600 mb-4">
+                            Là xác suất để bạn thấy sự khác biệt này NẾU thực sự thuốc KHÔNG CÓ TÁC DỤNG GÌ CẢ (giả thuyết Null đúng).
+                        </p>
+                        <div class="bg-slate-50 p-3 rounded border border-slate-100 text-xs font-mono text-slate-600">
+                            p < 0.05 => Xác suất "ăn may" nhỏ hơn 5% => Ta tin là thật. <br>
+                            p > 0.05 => Dễ xảy ra do ngẫu nhiên => Không tin được.
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- SECTION 4: TYPES -->
+        <section id="types" class="tab-content hidden animate-fade-in">
+            <h2 class="text-3xl font-bold text-center text-slate-900 mb-10">Bộ công cụ T-test</h2>
+            <div class="grid md:grid-cols-3 gap-8">
+                
+                <!-- Type 1 -->
+                <div class="group bg-white rounded-2xl p-8 border border-slate-200 shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300 relative overflow-hidden">
+                    <div class="absolute top-0 left-0 w-full h-1 bg-blue-500 transform origin-left scale-x-0 group-hover:scale-x-100 transition-transform duration-500"></div>
+                    <div class="w-14 h-14 bg-blue-50 rounded-2xl flex items-center justify-center text-blue-600 mb-6 group-hover:bg-blue-600 group-hover:text-white transition-colors">
+                        <i class="ph-duotone ph-user text-3xl"></i>
+                    </div>
+                    <h3 class="font-bold text-xl text-slate-900 mb-2">One-Sample T-test</h3>
+                    <p class="text-sm text-slate-500 mb-4 font-mono bg-slate-50 inline-block px-2 py-1 rounded">Mẫu vs Tiêu chuẩn</p>
+                    <p class="text-slate-600 text-sm leading-relaxed">
+                        So sánh điểm trung bình của nhóm bạn với một con số cụ thể đã biết.
+                    </p>
+                    <div class="mt-6 pt-6 border-t border-slate-100">
+                        <p class="text-xs font-bold text-slate-400 uppercase mb-2">Ví dụ Data Eng:</p>
+                        <p class="text-sm text-slate-700">"Thời gian chạy pipeline trung bình của team có thấp hơn chuẩn KPI công ty (30 phút) không?"</p>
+                    </div>
+                </div>
+
+                <!-- Type 2 -->
+                <div class="group bg-white rounded-2xl p-8 border border-slate-200 shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300 relative overflow-hidden">
+                    <div class="absolute top-0 left-0 w-full h-1 bg-purple-500 transform origin-left scale-x-0 group-hover:scale-x-100 transition-transform duration-500"></div>
+                    <div class="w-14 h-14 bg-purple-50 rounded-2xl flex items-center justify-center text-purple-600 mb-6 group-hover:bg-purple-600 group-hover:text-white transition-colors">
+                        <i class="ph-duotone ph-users-three text-3xl"></i>
+                    </div>
+                    <h3 class="font-bold text-xl text-slate-900 mb-2">Independent T-test</h3>
+                    <p class="text-sm text-slate-500 mb-4 font-mono bg-slate-50 inline-block px-2 py-1 rounded">Nhóm A vs Nhóm B</p>
+                    <p class="text-slate-600 text-sm leading-relaxed">
+                        So sánh hai nhóm hoàn toàn tách biệt, không liên quan đến nhau. (Phổ biến nhất trong A/B Testing).
+                    </p>
+                    <div class="mt-6 pt-6 border-t border-slate-100">
+                        <p class="text-xs font-bold text-slate-400 uppercase mb-2">Ví dụ Data Eng:</p>
+                        <p class="text-sm text-slate-700">"Hệ thống dùng Redis Cache có nhanh hơn hệ thống dùng Memcached không?"</p>
+                    </div>
+                </div>
+
+                <!-- Type 3 -->
+                <div class="group bg-white rounded-2xl p-8 border border-slate-200 shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300 relative overflow-hidden">
+                    <div class="absolute top-0 left-0 w-full h-1 bg-orange-500 transform origin-left scale-x-0 group-hover:scale-x-100 transition-transform duration-500"></div>
+                    <div class="w-14 h-14 bg-orange-50 rounded-2xl flex items-center justify-center text-orange-600 mb-6 group-hover:bg-orange-600 group-hover:text-white transition-colors">
+                        <i class="ph-duotone ph-arrows-left-right text-3xl"></i>
+                    </div>
+                    <h3 class="font-bold text-xl text-slate-900 mb-2">Paired T-test</h3>
+                    <p class="text-sm text-slate-500 mb-4 font-mono bg-slate-50 inline-block px-2 py-1 rounded">Trước vs Sau</p>
+                    <p class="text-slate-600 text-sm leading-relaxed">
+                        So sánh trên cùng một đối tượng tại hai thời điểm khác nhau.
+                    </p>
+                    <div class="mt-6 pt-6 border-t border-slate-100">
+                        <p class="text-xs font-bold text-slate-400 uppercase mb-2">Ví dụ Data Eng:</p>
+                        <p class="text-sm text-slate-700">"Hiệu năng của server CÙNG MỘT LÚC thay đổi thế nào TRƯỚC và SAU khi tối ưu query?"</p>
+                    </div>
+                </div>
+
+            </div>
+        </section>
+
+        <!-- SECTION 5: GLOSSARY (NEW) -->
+        <section id="glossary" class="tab-content hidden animate-fade-in">
+            <div class="max-w-5xl mx-auto space-y-8">
+                <div class="text-center mb-10">
+                    <h2 class="text-3xl font-bold text-slate-900">Từ điển Data Engineer (Jamovi/SPSS)</h2>
+                    <p class="text-slate-500 mt-2">Dịch và giải thích nhanh các tham số khó hiểu trong báo cáo thống kê.</p>
+                </div>
+
+                <div class="grid gap-6">
+                    
+                    <!-- Term 1 -->
+                    <div class="glass-panel p-6 rounded-xl border border-slate-200 flex flex-col md:flex-row gap-6 items-start hover:border-brand-400 transition-colors">
+                        <div class="w-full md:w-1/4">
+                            <div class="font-bold text-lg text-brand-700">T-Statistic</div>
+                            <div class="text-sm font-mono text-slate-400">statistic, t-value</div>
+                        </div>
+                        <div class="w-full md:w-1/4">
+                            <div class="font-bold text-slate-800">Giá trị t</div>
+                        </div>
+                        <div class="w-full md:w-1/2 text-slate-600 text-sm leading-relaxed">
+                            Là tỷ số giữa <strong>Tín hiệu</strong> (khác biệt) và <strong>Nhiễu</strong>. <br>
+                            Số càng lớn (dương hoặc âm) nghĩa là hai nhóm càng khác biệt rõ rệt. Thường thì |t| > 2 là dấu hiệu tốt.
+                        </div>
+                    </div>
+
+                    <!-- Term 2 -->
+                    <div class="glass-panel p-6 rounded-xl border border-slate-200 flex flex-col md:flex-row gap-6 items-start hover:border-brand-400 transition-colors">
+                        <div class="w-full md:w-1/4">
+                            <div class="font-bold text-lg text-brand-700">P-value</div>
+                            <div class="text-sm font-mono text-slate-400">sig., probability</div>
+                        </div>
+                        <div class="w-full md:w-1/4">
+                            <div class="font-bold text-slate-800">Trị số p</div>
+                        </div>
+                        <div class="w-full md:w-1/2 text-slate-600 text-sm leading-relaxed">
+                            Xác suất để kết quả này xảy ra do <strong>ngẫu nhiên</strong>. <br>
+                            <ul class="list-disc pl-4 mt-1 space-y-1">
+                                <li><strong>p < 0.05:</strong> "Hiếm gặp nếu chỉ là ăn may" -> Tin là thật (Có ý nghĩa thống kê).</li>
+                                <li><strong>p > 0.05:</strong> "Bình thường thôi" -> Không đủ bằng chứng.</li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <!-- Term 3 -->
+                    <div class="glass-panel p-6 rounded-xl border border-slate-200 flex flex-col md:flex-row gap-6 items-start hover:border-brand-400 transition-colors">
+                        <div class="w-full md:w-1/4">
+                            <div class="font-bold text-lg text-brand-700">Degrees of Freedom (df)</div>
+                            <div class="text-sm font-mono text-slate-400">df</div>
+                        </div>
+                        <div class="w-full md:w-1/4">
+                            <div class="font-bold text-slate-800">Bậc tự do</div>
+                        </div>
+                        <div class="w-full md:w-1/2 text-slate-600 text-sm leading-relaxed">
+                            Liên quan mật thiết đến <strong>cỡ mẫu (N)</strong>. Công thức thường là <code class="bg-slate-100 px-1 rounded">N - 1</code> hoặc <code class="bg-slate-100 px-1 rounded">N1 + N2 - 2</code>. <br>
+                            df càng cao (mẫu càng lớn) thì kết quả càng đáng tin cậy. Bạn không cần quá lo về số này, nhưng báo cáo cần phải ghi nó vào.
+                        </div>
+                    </div>
+
+                    <!-- Term 4 -->
+                    <div class="glass-panel p-6 rounded-xl border border-slate-200 flex flex-col md:flex-row gap-6 items-start hover:border-brand-400 transition-colors">
+                        <div class="w-full md:w-1/4">
+                            <div class="font-bold text-lg text-brand-700">Mean Difference</div>
+                            <div class="text-sm font-mono text-slate-400">mean diff</div>
+                        </div>
+                        <div class="w-full md:w-1/4">
+                            <div class="font-bold text-slate-800">Hiệu trung bình</div>
+                        </div>
+                        <div class="w-full md:w-1/2 text-slate-600 text-sm leading-relaxed">
+                            Đơn giản là: <code class="bg-slate-100 px-1 rounded">Mean A - Mean B</code>. <br>
+                            Cho biết nhóm này hơn nhóm kia bao nhiêu điểm/giây/đơn vị. Đây là con số thực tế bạn quan tâm (VD: nhanh hơn 20ms).
+                        </div>
+                    </div>
+
+                    <!-- Term 5 -->
+                    <div class="glass-panel p-6 rounded-xl border border-slate-200 flex flex-col md:flex-row gap-6 items-start hover:border-brand-400 transition-colors">
+                        <div class="w-full md:w-1/4">
+                            <div class="font-bold text-lg text-brand-700">Confidence Interval (95%)</div>
+                            <div class="text-sm font-mono text-slate-400">95% CI, Lower/Upper</div>
+                        </div>
+                        <div class="w-full md:w-1/4">
+                            <div class="font-bold text-slate-800">Khoảng tin cậy 95%</div>
+                        </div>
+                        <div class="w-full md:w-1/2 text-slate-600 text-sm leading-relaxed">
+                            Khoảng dự đoán an toàn. <br>
+                            Ví dụ CI là [2, 10] nghĩa là: "Tôi tin 95% rằng mức độ hiệu quả thực sự nằm đâu đó từ 2 đến 10". Nếu khoảng này chứa số 0 (ví dụ [-2, 5]), nghĩa là có khả năng thuốc vô tác dụng.
+                        </div>
+                    </div>
+
+                     <!-- Term 6 -->
+                     <div class="glass-panel p-6 rounded-xl border border-slate-200 flex flex-col md:flex-row gap-6 items-start hover:border-brand-400 transition-colors">
+                        <div class="w-full md:w-1/4">
+                            <div class="font-bold text-lg text-brand-700">Standard Error Difference</div>
+                            <div class="text-sm font-mono text-slate-400">SE diff, SE mean</div>
+                        </div>
+                        <div class="w-full md:w-1/4">
+                            <div class="font-bold text-slate-800">Sai số chuẩn của hiệu</div>
+                        </div>
+                        <div class="w-full md:w-1/2 text-slate-600 text-sm leading-relaxed">
+                            Chính là phần mẫu số (Nhiễu) trong công thức T-test. Nó cho biết độ tin cậy của con số "Hiệu trung bình" tính được ở trên.
+                        </div>
+                    </div>
+
+                    <!-- Term 7 -->
+                     <div class="glass-panel p-6 rounded-xl border border-slate-200 flex flex-col md:flex-row gap-6 items-start hover:border-brand-400 transition-colors">
+                        <div class="w-full md:w-1/4">
+                            <div class="font-bold text-lg text-brand-700">Effect Size (Cohen's d)</div>
+                            <div class="text-sm font-mono text-slate-400">Cohen's d</div>
+                        </div>
+                        <div class="w-full md:w-1/4">
+                            <div class="font-bold text-slate-800">Kích thước ảnh hưởng</div>
+                        </div>
+                        <div class="w-full md:w-1/2 text-slate-600 text-sm leading-relaxed">
+                            P-value chỉ cho biết "Có khác hay không", còn Cohen's d cho biết "Khác <strong>nhiều hay ít</strong>". <br>
+                            d = 0.2 (nhỏ), d = 0.5 (trung bình), d = 0.8 (lớn).
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-white border-t border-slate-200 py-10 mt-auto">
+        <div class="container mx-auto px-4 text-center">
+            <div class="text-slate-400 font-mono text-sm">
+                (c) duyetbot
+            </div>
+        </div>
+    </footer>
+
+    <!-- LOGIC SCRIPT -->
+    <script>
+        // --- CONSTANTS & HELPERS ---
+        const jStat = {
+            // Hàm phân phối chuẩn (Gaussian PDF)
+            normal: function(x, mean, std) {
+                return (1 / (Math.sqrt(2 * Math.PI) * std)) * Math.exp(-0.5 * Math.pow((x - mean) / std, 2));
+            },
+            // Giả lập hàm mật độ tích lũy (CDF) để tính p-value (xấp xỉ)
+            // Trong thực tế nên dùng thư viện jStat đầy đủ, đây là bản rút gọn cho demo
+            studenttCDF: function(t, df) {
+                // Xấp xỉ đơn giản cho demo UI visualization
+                // P-value thực tế phức tạp hơn nhiều với phân phối Student t
+                const x = t / Math.sqrt(df);
+                return 1 / (1 + Math.pow(x, 2)); 
+            }
+        };
+
+        // --- STATE MANAGEMENT ---
+        const state = {
+            meanA: 50,
+            meanB: 55,
+            sd: 10,
+            n: 30
+        };
+
+        // --- DOM ELEMENTS ---
+        const inputs = {
+            meanA: document.getElementById('input-mean-a'),
+            meanB: document.getElementById('input-mean-b'),
+            sd: document.getElementById('input-sd'),
+            n: document.getElementById('input-n'),
+        };
+
+        const displays = {
+            meanA: document.getElementById('val-mean-a'),
+            meanB: document.getElementById('val-mean-b'),
+            sd: document.getElementById('val-sd'),
+            n: document.getElementById('val-n'),
+            signal: document.getElementById('res-signal'),
+            noise: document.getElementById('res-noise'),
+            t: document.getElementById('res-t'),
+            p: document.getElementById('res-p'),
+            conclusionBox: document.getElementById('conclusion-box'),
+            conclusionTitle: document.getElementById('conclusion-title'),
+            conclusionText: document.getElementById('conclusion-text'),
+            pValueCard: document.getElementById('p-value-card'),
+        };
+
+        const canvas = document.getElementById('bellCurveCanvas');
+        const ctx = canvas.getContext('2d');
+
+        // --- INITIALIZATION ---
+        function init() {
+            // Resize canvas for retina displays
+            resizeCanvas();
+            window.addEventListener('resize', () => {
+                resizeCanvas();
+                draw();
+            });
+
+            // Bind Events
+            Object.keys(inputs).forEach(key => {
+                inputs[key].addEventListener('input', (e) => {
+                    state[key] = parseFloat(e.target.value);
+                    displays[key].innerText = state[key];
+                    calculateAndDraw();
+                });
+            });
+
+            // Initial Draw
+            calculateAndDraw();
+
+            // Set active tab
+            switchTab('story');
+        }
+
+        function resizeCanvas() {
+            const container = canvas.parentElement;
+            canvas.width = container.clientWidth * 2; // High DPI
+            canvas.height = container.clientHeight * 2;
+            canvas.style.width = container.clientWidth + 'px';
+            canvas.style.height = container.clientHeight + 'px';
+            ctx.scale(2, 2);
+        }
+
+        // --- CORE LOGIC ---
+        function calculateAndDraw() {
+            // 1. Calculate Stats
+            const signal = Math.abs(state.meanA - state.meanB);
+            
+            // Standard Error (SE) = SD / sqrt(N) * sqrt(2) (cho independent t-test bằng nhau)
+            // Simplified for demo: Noise = SD * sqrt(2/N)
+            const noise = state.sd * Math.sqrt(2 / state.n);
+            
+            const tScore = signal / noise;
+
+            // Tính toán P-value (Giả lập đơn giản cho demo)
+            // Sử dụng sigmoid function ngược để giả lập mối quan hệ giữa t và p
+            // t càng lớn, p càng nhỏ. t=2 tương đương p~0.05
+            let pValue = 1 / (1 + Math.exp(tScore * 1.5 - 3)); // Hàm heuristic cho demo mượt mà
+            if(tScore > 6) pValue = 0.0001;
+            else if (tScore < 0.1) pValue = 0.9;
+            
+            // Update UI Numbers
+            displays.signal.innerText = signal.toFixed(1);
+            displays.noise.innerText = noise.toFixed(2);
+            displays.t.innerText = tScore.toFixed(2);
+            displays.p.innerText = pValue < 0.001 ? "< 0.001" : pValue.toFixed(3);
+
+            // Update Conclusion Style
+            const isSig = tScore > 2.0; // Threshold đơn giản
+            if (isSig) {
+                displays.conclusionBox.className = "p-6 rounded-xl border-l-4 transition-all duration-300 bg-green-50 border-green-500";
+                displays.conclusionTitle.innerHTML = `<i class="ph-fill ph-check-circle text-green-600"></i> Khác biệt có Ý nghĩa Thống kê!`;
+                displays.conclusionText.innerText = `Với t-score = ${tScore.toFixed(2)}, hai nhóm đã tách biệt đủ rõ. Khả năng sự chênh lệch này do ngẫu nhiên là rất thấp (p < 0.05). Bạn có thể tự tin kết luận "CodeBrew X" thực sự hiệu quả.`;
+                displays.pValueCard.className = "glass-panel p-4 rounded-xl text-center bg-green-100 ring-2 ring-green-200";
+            } else {
+                displays.conclusionBox.className = "p-6 rounded-xl border-l-4 transition-all duration-300 bg-amber-50 border-amber-500";
+                displays.conclusionTitle.innerHTML = `<i class="ph-fill ph-warning-circle text-amber-600"></i> Chưa đủ bằng chứng`;
+                displays.conclusionText.innerText = `Hai đỉnh núi còn chồng lấn quá nhiều. Sự khác biệt này có thể chỉ do may mắn (Noise lấn át Signal). Cần tăng cỡ mẫu hoặc tìm cách giảm độ lệch chuẩn.`;
+                displays.pValueCard.className = "glass-panel p-4 rounded-xl text-center transition-colors duration-300";
+            }
+
+            // 2. Draw Chart
+            draw(state.meanA, state.meanB, state.sd);
+        }
+
+        function draw(meanA, meanB, sd) {
+            const width = canvas.width / 2;
+            const height = canvas.height / 2;
+            
+            ctx.clearRect(0, 0, width, height);
+
+            // Setup Coordinate System
+            // X axis: 0 to 100
+            // Y axis: auto scale
+            const xMin = 20;
+            const xMax = 80;
+            const xScale = width / (xMax - xMin);
+            
+            // Tìm Max Y để scale biểu đồ
+            const maxPDF = jStat.normal(meanA, meanA, sd); // Đỉnh của chuông
+            const yScale = (height * 0.8) / maxPDF; 
+            const yOffset = height - 30;
+
+            // Helper to map logic coords to canvas coords
+            const mapX = (x) => (x - xMin) * xScale;
+            const mapY = (y) => yOffset - (y * yScale);
+
+            // Draw Curve Function
+            function drawBellCurve(mean, colorHex, isFill) {
+                ctx.beginPath();
+                ctx.moveTo(mapX(xMin), mapY(jStat.normal(xMin, mean, sd)));
+                
+                for (let x = xMin; x <= xMax; x += 0.5) {
+                    ctx.lineTo(mapX(x), mapY(jStat.normal(x, mean, sd)));
+                }
+
+                if (isFill) {
+                    ctx.lineTo(mapX(xMax), yOffset);
+                    ctx.lineTo(mapX(xMin), yOffset);
+                    ctx.fillStyle = colorHex;
+                    ctx.fill();
+                } else {
+                    ctx.strokeStyle = colorHex;
+                    ctx.lineWidth = 3;
+                    ctx.stroke();
+                }
+            }
+
+            // Draw Area Intersection (Overlap) - Phức tạp hơn chút
+            // Vẽ giao thoa bằng cách composite operation
+            
+            // Draw Curve A (Blue)
+            ctx.save();
+            drawBellCurve(meanA, "rgba(59, 130, 246, 0.2)", true); // Fill
+            ctx.restore();
+            drawBellCurve(meanA, "#2563eb", false); // Stroke
+
+            // Draw Mean Line A
+            ctx.beginPath();
+            ctx.moveTo(mapX(meanA), mapY(0));
+            ctx.lineTo(mapX(meanA), mapY(jStat.normal(meanA, meanA, sd)));
+            ctx.strokeStyle = "#2563eb";
+            ctx.setLineDash([5, 5]);
+            ctx.lineWidth = 1;
+            ctx.stroke();
+            ctx.setLineDash([]);
+
+            // Draw Curve B (Purple)
+            ctx.save();
+            drawBellCurve(meanB, "rgba(147, 51, 234, 0.2)", true); // Fill
+            ctx.restore();
+            drawBellCurve(meanB, "#9333ea", false); // Stroke
+
+             // Draw Mean Line B
+             ctx.beginPath();
+            ctx.moveTo(mapX(meanB), mapY(0));
+            ctx.lineTo(mapX(meanB), mapY(jStat.normal(meanB, meanB, sd)));
+            ctx.strokeStyle = "#9333ea";
+            ctx.setLineDash([5, 5]);
+            ctx.lineWidth = 1;
+            ctx.stroke();
+            ctx.setLineDash([]);
+
+            // Draw X Axis
+            ctx.beginPath();
+            ctx.moveTo(0, yOffset);
+            ctx.lineTo(width, yOffset);
+            ctx.strokeStyle = "#cbd5e1";
+            ctx.lineWidth = 1;
+            ctx.stroke();
+        }
+
+        // --- TAB NAVIGATION ---
+        window.switchTab = function(tabId) {
+            // Update Buttons
+            document.querySelectorAll('.nav-btn').forEach(btn => {
+                if (btn.dataset.target === tabId) {
+                    btn.classList.add('bg-slate-200', 'text-slate-900', 'shadow-sm');
+                    btn.classList.remove('text-slate-600');
+                } else {
+                    btn.classList.remove('bg-slate-200', 'text-slate-900', 'shadow-sm');
+                    btn.classList.add('text-slate-600');
+                }
+            });
+
+            // Update Content
+            document.querySelectorAll('.tab-content').forEach(content => {
+                if (content.id === tabId) {
+                    content.classList.remove('hidden');
+                } else {
+                    content.classList.add('hidden');
+                }
+            });
+            
+            // If Lab tab, resize canvas just in case
+            if(tabId === 'lab') {
+                setTimeout(() => {
+                    resizeCanvas();
+                    draw(state.meanA, state.meanB, state.sd);
+                }, 50);
+            }
+        }
+
+        // Run
+        init();
+
+    </script>
+</body>
+</html>
